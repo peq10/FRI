@@ -60,6 +60,9 @@ def generate_e_spline(alpha_vec,T_s,T = 1,mode = 'causal'):
     #as each convolution is len(a) + len(b) - 1
     num_samples = len(t_phi)*sub_phi.shape[1] - (sub_phi.shape[1] - 1)
     t = np.arange(0,num_samples)*T_s
+    t *= T
+    
+    # TODO -  add the mode modifications to t
         
     return phi, t
    
