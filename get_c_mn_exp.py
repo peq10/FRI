@@ -36,6 +36,12 @@ def get_c_mn_exp(alpha_m, n, phi, t_phi, T = 1):
     
     return c_m_n
     
+def get_c_m_n_exp2(alpha_m, n, phi, t_phi, T = 1, t0 = 0):
+    
+    
+    
+    return c_m_n
+    
     
 def load_check_input():
 
@@ -58,3 +64,14 @@ def test():
     c_m_n = get_c_mn_exp(*input_)
     #currently fails as my cmn are shifted?
     np.testing.assert_allclose(corr_c_m_n,c_m_n)
+
+alpha_m, n, phi, t_phi, T  = load_check_input()
+t_0 = 0
+t_phi_sampling = np.mean(np.diff(t_phi))
+#get kernel boundaries
+t_1 = t_phi[0]/T
+t_2 = t_phi[-1]/T
+
+#compute C_m_0 - I don't understand why the index here is not the full P?
+#time span of the t_phi vector without scaling?
+l = np.arange(np.ceil(np.round(t_0/T - t_2,decimals = 3)),np.floor(np.round(t_0/T - t_1,decimals = 3)) )
