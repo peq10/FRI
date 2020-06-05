@@ -36,13 +36,7 @@ def get_c_mn_exp(alpha_m, n, phi, t_phi, T = 1):
     c_m_n = exp_mat * c_m_0[:,None]
     
     return c_m_n
-    
-def get_c_m_n_exp2(alpha_m, n, phi, t_phi, T = 1, t0 = 0):
-    
-    
-    
-    return c_m_n
-    
+        
     
 def load_check_input():
 
