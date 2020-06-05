@@ -23,26 +23,27 @@ def generate_e_spline(alpha_vec,T_s,T = 1,mode = 'causal'):
     is obtained in time domain computing the P convolutions of the P+1 zero 
     order E-splines:
     phi_a_vec(t) = phi_a_0(t) * phi_a_1(t) * ... * phi_a_N(t)
-
     Parameters
     ----------
     alpha_vec : TYPE
-        Vector of P+1 alpha values of the E=spline.
+    Vector of P+1 alpha values of the E=spline.
     T_s : TYPE
-        Time resolution of the spline.
+    Time resolution of the spline.
     T : TYPE
-        Scale factor. Default T = 1.
+    Scale factor. Default T = 1.
     mode : TYPE
-        Optional argument. 'causal', 'symmetric' or 'anticausal'. Default 'causal'.
-
+    Optional argument. 'causal', 'symmetric' or 'anticausal'. Default 'causal'.
+    
     Returns
     -------
     phi       : Vector of size (P+1)/T + 1 with the values of the
-                E-spline.
-   t         : Time stamps of the corresponding values of the phi vector.
-
-   '''
-   
+    E-spline.
+    t         : Time stamps of the corresponding values of the phi vector.
+    
+    '''
+    if mode != 'causal':
+        raise NotImplementedError('Havent done different modes')
+       
     #apply scaling
     T_s /= T
     
@@ -55,7 +56,7 @@ def generate_e_spline(alpha_vec,T_s,T = 1,mode = 'causal'):
     phi = np.concatenate(([0],sub_phi[:-1,0]))
     for i in range(sub_phi.shape[1]-1):
         phi = T_s*scipy.signal.convolve(phi,sub_phi[:,i+1])
-   
+       
     #calculate the time of the vector
     #as each convolution is len(a) + len(b) - 1
     num_samples = len(t_phi)*sub_phi.shape[1] - (sub_phi.shape[1] - 1)
@@ -63,7 +64,7 @@ def generate_e_spline(alpha_vec,T_s,T = 1,mode = 'causal'):
     t *= T
     
     # TODO -  add the mode modifications to t
-        
+    
     return phi, t
    
 def test_e_spline():
