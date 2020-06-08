@@ -8,7 +8,7 @@ Created on Fri Jun  5 12:02:11 2020
 import scipy.linalg
 import numpy as np
 
-def acmp_p(sm, K, M, P, p):
+def acmp_p(sm, K, M, P, p = 1):
     '''
     
 
@@ -32,7 +32,7 @@ def acmp_p(sm, K, M, P, p):
 
     '''
         
-    H = scipy.linalg.toeplitz(sm[M+1:P+2],sm[M+1::-1])
+    H = scipy.linalg.toeplitz(sm[M::-1],sm[M:P+1])[::-1]
     U,_,_ = scipy.linalg.svd(H)
     
     U = U[:,:K]

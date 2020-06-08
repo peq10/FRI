@@ -38,7 +38,7 @@ corr_exp = np.exp(alpha_vec[i]*t_r)
 plt.cla()
 plt.plot(t_r,corr_exp.real)
 
-n_vec = (np.arange(-N/2,N/2)).astype(int)
+n_vec = (np.arange(-45,15)).astype(int)
 c_m_n = FRIF.get_c_mn_exp(alpha_vec, n_vec, phi, t_phi)
 c_m_n_2 = FRIF.get_c_mn_exp2(alpha_vec, n_vec, phi, t_phi)
 
