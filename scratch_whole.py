@@ -85,6 +85,7 @@ y_n = (1/fs)*scipy.signal.convolve(x,phi[::-1], mode = 'same')
 #need to make signal as if it were sampled with exponential repro kernel
 
 
+
 plt.plot(y_n)
 plt.show()
 
