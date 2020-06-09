@@ -11,6 +11,47 @@ import scipy.linalg
 import matrix_pencil
 
 def extract_decaying_exponentials(x,t_x,tau,phi,t_phi,alpha_0,lbda,T,c_m_n,n_vec,K = None):
+    '''
+    Extracts the location and size of decaying exponentials from time course x
+    using the FRI method.
+    Adapted from Onativia's  original matlab code.
+    For reference see http://www.commsp.ee.ic.ac.uk/~pld/group/PhDThesis_Onativia15.pdf pp.74 - 77.
+
+    Parameters
+    ----------
+    x : float array length N
+        Samples including decaying exponentials.
+    t_x : float array length N
+        Time stamps of x.
+    tau : float
+        The decay constant exp(-t/tau) of the exponentials in x.
+    phi : float array length k
+        Exponential reproducing kernel. Although not actually (my understanding is poor) - Dirichlet kernel convolved with beta t rev.
+    t_phi : float array length k
+        phi time stamps.
+    alpha_0 : complex float
+        The first exponent from the exponential reproducing kernel.
+    lbda : complex float
+        the increment between the exponents in the exponential reproducing kernel.
+    T : Float
+        Sampling period.
+    c_m_n : M by N complex array
+        Exponential reproducing coefficients.
+    n_vec : N integer array
+        n indices where c_m_n have been calculated.
+    K : int, optional
+        Number of exponentials in x. The default is None - if this is the case,
+        will estimate the number.
+
+    Returns
+    -------
+    tk : K float array
+        estimated exponential start locs.
+    ak : K float array
+        estimated exponential sizes.
+
+    '''
+    
     
     #sampling period. this is just T in all cases as far as I can tekk
     t_s = t_x[1] - t_x[0]
