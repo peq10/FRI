@@ -43,7 +43,7 @@ alpha_0 = -1j * np.pi / 2
 lbda = 1j * np.pi / P
 alpha_vec = alpha_0 + lbda*m
 
-phi, t_phi = FRIF.generate_e_spline(alpha_vec, 1/fs/over_samp)
+phi, t_phi = FRIF.generate_e_spline(alpha_vec, 1/fs/over_samp,T = 1/fs)
 t_diric = np.arange(-(P+1)/2,(P+1)/2 +1/over_samp,1/over_samp)*(2*np.pi)/(P+1)
 phi = scipy.special.diric(t_diric, P+1)
 phi = phi.real
@@ -78,6 +78,11 @@ c_m_n = np.squeeze(test_dict['c_m_n'])
 #now downsample phi, t_phi to remove oversamplign
 phi = phi[::over_samp]
 t_phi = t_phi[::over_samp]
+
+
+#save all input to extract_decaying_exponential
+dec_dict = {'x':x,'t_x':t,'alpha_vec':alpha_vec,'tau':tau,'phi':phi,'t_phi':t_phi,'alpha_0':alpha_0,'lbda':lbda,'T':1/fs,'c_m_n':c_m_n,'n_vec':n_vec,'K':2}
+np.save('./data/dec_input.npy',dec_dict)
 
 #now neeed to compute yn as <x,phi(t/T - n)>
 #is not a convolution

@@ -10,6 +10,8 @@ import numpy as np
 
 def acmp_p(sm, K, M, P, p = 1):
     '''
+    http://www.commsp.ee.ic.ac.uk/~pld/group/PhDThesis_Onativia15.pdf
+    See page 50
     
 
 
@@ -32,7 +34,8 @@ def acmp_p(sm, K, M, P, p = 1):
 
     '''
         
-    H = scipy.linalg.toeplitz(sm[M::-1],sm[M:P+1])[::-1]
+    H = scipy.linalg.toeplitz(sm[M:P+1],sm[M::-1])[:,::-1]
+
     U,_,_ = scipy.linalg.svd(H)
     
     U = U[:,:K]
@@ -42,3 +45,7 @@ def acmp_p(sm, K, M, P, p = 1):
     uk = scipy.linalg.eig(Z)[0]**(1/p)
     
     return uk
+
+
+if __name__ == '__main__':
+    pass
