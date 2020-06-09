@@ -27,6 +27,7 @@ def get_c_mn_exp(alpha_m, n, phi, t_phi, T = 1):
      OUTPUT:
       - c_m_n   : Coefficients to reproduce the exponentials.
     '''
+    raise ValueError('This function doesnt work')
     #calculate cm0
     idx = np.round((len(phi)-1)/(n.max() - n.min())*(n - n.min())).astype(int) 
     c_m_0 = 1/(np.sum(np.exp(alpha_m[:,None] * n[None,:])*phi[idx][None,:],-1))

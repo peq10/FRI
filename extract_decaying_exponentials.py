@@ -26,7 +26,7 @@ def extract_decaying_exponentials(x,t_x,tau,phi,t_phi,alpha_0,lbda,T,c_m_n,n_vec
     tau : float
         The decay constant exp(-t/tau) of the exponentials in x.
     phi : float array length k
-        Exponential reproducing kernel. Although not actually (my understanding is poor) - Dirichlet kernel convolved with beta t rev.
+        Exponential reproducing kernel. Is Dirichlet kernel.
     t_phi : float array length k
         phi time stamps.
     alpha_0 : complex float
@@ -68,6 +68,8 @@ def extract_decaying_exponentials(x,t_x,tau,phi,t_phi,alpha_0,lbda,T,c_m_n,n_vec
     #estimate K if not provided
     if K is None:
         K = estimate_K(s_m)
+        if K == 0:
+            return np.array([]),np.array([])
         
     #locate diracs using matrix pencil
     P = int(len(n_vec)/2)
@@ -75,7 +77,7 @@ def extract_decaying_exponentials(x,t_x,tau,phi,t_phi,alpha_0,lbda,T,c_m_n,n_vec
     
     tk = np.real(T * np.log(u_k) / lbda) #these are shifted by n[0]*T
     
-    #find amplitudes ak
+    #find amplitudes ak - solving for bk eqn 2.57, p.45
     A = np.zeros((K,K)).astype(np.complex128)
     for i in range(K):
         A[i,:] = u_k[:K]**i
@@ -84,7 +86,7 @@ def extract_decaying_exponentials(x,t_x,tau,phi,t_phi,alpha_0,lbda,T,c_m_n,n_vec
     b_k = scipy.linalg.solve(A,B)
     ak = np.real(b_k*np.exp(-alpha_0*tk/T))
     
-    #shift to correct time
+    #shift to correct time - undoing the effect of sampling with exponential repro kernel.
     tk -= n_vec[0]*T
     return tk,ak
 

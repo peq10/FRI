@@ -10,8 +10,14 @@ import scipy.signal
 import generate_e_spline as ges
 import get_c_mn_exp as gcm
 import matrix_pencil as mp
+import extract_decaying_exponentials as ede
+import ca_detect_sliding_emom as ca_det
 
+def sliding_window_detect(x,t,win_len,tau, mode = 'estimate', fixed_K = None):
+    return ca_det.sliding_window_detect(x,t,win_len,tau, mode = mode, fixed_K = fixed_K)
 
+def extract_decaying_exponentials(x,t_x,tau,phi,t_phi,alpha_0,lbda,T,c_m_n,n_vec,K = None):
+    return ede.extract_decaying_exponentials(x,t_x,tau,phi,t_phi,alpha_0,lbda,T,c_m_n,n_vec,K = K)
 
 def generate_e_spline(alpha_vec,T_s,T=1, mode = 'causal'):
     return ges.generate_e_spline(alpha_vec,T_s,T=T, mode = mode)
@@ -19,8 +25,8 @@ def generate_e_spline(alpha_vec,T_s,T=1, mode = 'causal'):
 def get_c_mn_exp(alpha_m,n,phi,t_phi):
     return gcm.get_c_mn_exp(alpha_m,n,phi,t_phi)
 
-def get_c_mn_exp2(alpha_m,n,phi,t_phi):
-    return gcm.get_c_mn_exp2(alpha_m,n,phi,t_phi)
+def get_c_mn_exp2(alpha_m,n,phi,t_phi,T = 1):
+    return gcm.get_c_mn_exp2(alpha_m,n,phi,t_phi,T = T)
 
 
 def acmp_p(sm, K, M, P, p):
