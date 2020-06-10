@@ -50,10 +50,10 @@ def draw_poisson_times(window_length,firing_rate, spike_size = 1, spike_std = 0.
     tk = np.array(tk)
     #draw from lognormal distribution for spike size
     ak = np.random.lognormal(mean = spike_size,sigma = spike_std,size = len(tk))
-    print(num_spikes)
+    #print(num_spikes)
     return tk,ak
 
-def make_signal(length,fs,firing_rate = 0.5,tau = 0.5,spike_size = 1, spike_std = 0.25):
+def make_signal(length,fs,firing_rate = 0.5,tau = 0.5,spike_size = 1, spike_std = 0.25, noise_level = 0):
     t = np.arange(0,length,1/fs)
     
     #draw times so that always 'fully contained' within time course
@@ -64,6 +64,10 @@ def make_signal(length,fs,firing_rate = 0.5,tau = 0.5,spike_size = 1, spike_std 
         t_adj = t - sp
         t_adj *= t_adj > 0
         signal += (t >= sp)*np.exp(-t_adj/tau)*ak[idx]
+        
+    if noise_level > 0:
+        signal += np.random.normal(loc = 0, scale = noise_level*spike_size,size = len(signal))
+        
     return tk,ak,t,signal
 
 def make_delta_signal(length,fs,kernel,rate,spike_size = 1, spike_std = 0.25,over_samp = 512):

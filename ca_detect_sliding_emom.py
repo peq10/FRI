@@ -105,6 +105,8 @@ def sliding_window_detect(x,t,win_len,tau, mode = 'estimate', fixed_K = None):
         all_ak.append(ak)
         win_idx.append(i_0*np.ones(len(tk)))
         K_i[i_0] = len(tk)
-        
-    return all_tk,all_ak,win_idx,K_i
+    
+    
+    
+    return np.concatenate(all_tk),np.concatenate(all_ak),np.concatenate(win_idx).astype(int),K_i.astype(int)
     

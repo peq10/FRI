@@ -29,13 +29,7 @@ while num_spikes == 0:
 
 all_tk,all_ak,win_idx,K_i = FRIF.sliding_window_detect(x,t,32,tau)
 
-tk_corrtime = []
-ak_corrtime = []
-for idx,entry in enumerate(all_tk):
-    if entry != []:
-        tk_corrtime += list(entry + idx/fs)
-        ak_corrtime += list(all_ak[idx])
-    
+
 
 
 

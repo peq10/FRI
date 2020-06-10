@@ -87,7 +87,9 @@ def extract_decaying_exponentials(x,t_x,tau,phi,t_phi,alpha_0,lbda,T,c_m_n,n_vec
     ak = np.real(b_k*np.exp(-alpha_0*tk/T))
     
     #shift to correct time - undoing the effect of sampling with exponential repro kernel.
-    tk -= n_vec[0]*T
+    #and any time offset
+    #this is currently wrong and I don't know why?
+    tk -= n_vec[0]*T - t_x[0]
     return tk,ak
 
 def estimate_K(sm):
