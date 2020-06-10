@@ -11,6 +11,7 @@ import ca_detect_sliding_emom as ca_detect
 import FRI_functions as FRIF
 import matplotlib.pyplot as plt
 import scipy.stats
+import cosmic.cosmic
 #np.random.seed(0)
 
 def detect_spikes(jhist,bins,all_tk,all_ak,thresh,):
@@ -65,34 +66,70 @@ def double_consistency_histogram(x,t,tau,winlens = [32,8],
         all_hists.append(hist)
     
     all_hists = np.array(all_hists)
-    #fig,ax = plt.subplots()
-    #ax.plot(bins[:-1],all_hists[0]/all_hists[0].max())
-    #ax.plot(bins[:-1],all_hists[1]/all_hists[1].max())
     
     jhist = all_hists[0]*all_hists[1]
     
     tk,ak = detect_spikes(jhist, bins, all_tk, all_ak, hist_thresh)
 
 
-    return tk,ak
+    return tk,ak,(jhist,bins,all_tk,all_ak)
 
 
-
-def example(length,noise_level):
+def calculate_ROC(length,noise_level,evals = 25):
+    np.random.seed(0)
     fs = 8
     tau = 0.5
     num_spikes = 0
     while num_spikes == 0:
-        tk_true,ak_true,t,x = FRIF.make_signal(length,fs,tau = tau, noise_level = noise_level)
+        tk_true,ak_true,t,x = FRIF.make_signal(length,fs,tau = tau, noise_level = noise_level,spike_std = 0)
         num_spikes = len(tk_true)
-
-    tk,ak = double_consistency_histogram(x, t, tau)
+    
+    #use cosmic metric for spike train comparison
+    crb       = cosmic.cosmic.compute_crb(1/fs, np.mean(ak_true), noise_level**2, 1/tau, 10**3)
+    # get metric width from crb
+    width     = cosmic.cosmic.compute_metric_width(crb)
+    
+    _,_,jhist_ret = double_consistency_histogram(x,t,tau)
+    jhist,bins,all_tk,all_ak = jhist_ret
+    
+    scores = []
+    prec = []
+    call = []
+    
+    for thresh_val in np.arange(evals)/evals:
+        tk,_ = detect_spikes(jhist, bins, all_tk, all_ak, thresh_val)
+        print(len(tk))
+        cos_score, cos_prec, cos_call,_,_, _ = cosmic.cosmic.compute_score(width,tk_true,tk)
+        scores.append(cos_score)
+        prec.append(cos_prec)
+        call.append(cos_call)
+        
     
     fig,ax = plt.subplots()
-    ax.plot(t,x)
-    ax.stem(tk,ak,'k',label = 'Detected',markerfmt ='xk')
-    ax.stem(tk_true,ak_true,'r', label = 'True',markerfmt='ro')
+    ax.plot(call,prec)
+    ax.set_xlabel('Recall')
+    ax.set_ylabel('Precision')
+    
+    return scores,prec,call
+
+
+
+def example(length,noise_level):
+    fs = 30
+    tau = 0.5
+    num_spikes = 0
+    while num_spikes == 0:
+        tk_true,ak_true,t,x = FRIF.make_signal(length,fs,tau = tau, noise_level = noise_level,spike_std = 0)
+        num_spikes = len(tk_true)
+
+    tk,ak,_ = double_consistency_histogram(x, t, tau,hist_thresh = 0.1,winlens = [128,32],spike_thresh = 0)
+    
+    plt.cla()
+    plt.plot(t,x)
+    plt.plot(t,x,'.')
+    plt.stem(tk_true,ak_true,'r', label = 'True',markerfmt='ro')
+    plt.stem(tk,ak,'k',label = 'Detected',markerfmt ='xk',linefmt = '--k')
     plt.legend()
     
 if __name__ == '__main__':
-    example(20,0.2)
+    example(40,0.0001)

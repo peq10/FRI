@@ -70,6 +70,7 @@ def make_signal(length,fs,firing_rate = 0.5,tau = 0.5,spike_size = 1, spike_std 
         
     return tk,ak,t,signal
 
+
 def make_delta_signal(length,fs,kernel,rate,spike_size = 1, spike_std = 0.25,over_samp = 512):
     '''
     Simulates signal of delta functions as sampled by kernel

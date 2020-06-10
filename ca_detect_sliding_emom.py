@@ -54,9 +54,9 @@ def sliding_window_detect(x,t,win_len,tau, mode = 'estimate', fixed_K = None):
     alpha_vec = alpha_0 + lbda*m
     
     #for some reason we don't actually use phi, just the time stamps??
-    _, t_phi = ges.generate_e_spline(alpha_vec, T/over_samp, T = T)
+    phi, t_phi = ges.generate_e_spline(alpha_vec, T/over_samp, T = T)
     t_diric = np.arange(-(P+1)/2,(P+1)/2 +1/over_samp,1/over_samp)*(2*np.pi)/(P+1)
-    phi = scipy.special.diric(t_diric, P+1)
+    #phi = scipy.special.diric(t_diric, P+1)
     phi = phi.real
         
     #generate ps
