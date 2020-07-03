@@ -132,4 +132,4 @@ def example(length,noise_level):
     plt.legend()
     
 if __name__ == '__main__':
-    example(40,0.0001)
+    example(40,0.000000001)
