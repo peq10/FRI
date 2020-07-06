@@ -32,7 +32,9 @@ def double_consistency_histogram(x,t,tau,winlens = [32,8],
                                  fixed_K = 1, 
                                  spike_thresh = 0,
                                  hist_res = 1,
-                                 hist_thresh = 0.05):
+                                 hist_thresh = 0.05,
+                                 box_filter = False,
+                                 box_filter_length = None):
     
     all_tk = []
     all_ak = []
@@ -43,7 +45,11 @@ def double_consistency_histogram(x,t,tau,winlens = [32,8],
         else:
             fixed_K_val = None
                 
-        tk,ak,_,_ = ca_detect.sliding_window_detect(x, t, win_len, tau, mode = modes[idx], fixed_K = fixed_K_val)
+        if not box_filter:
+            tk,ak,_,_ = ca_detect.sliding_window_detect(x, t, win_len, tau, mode = modes[idx], fixed_K = fixed_K_val)
+        else:
+            tk,ak,_,_ = ca_detect.sliding_window_detect_box_filtered(x, t, win_len, tau, box_filter_length, mode = modes[idx], fixed_K = fixed_K_val)
+            
         all_tk.append(tk)
         all_ak.append(ak)
         
@@ -132,4 +138,4 @@ def example(length,noise_level):
     plt.legend()
     
 if __name__ == '__main__':
-    example(40,0.000000001)
+    example(40,0.001)

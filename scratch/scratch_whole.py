@@ -17,7 +17,7 @@ import scipy.io
 #np.random.seed(0)
 
 fs = 6.4
-length = 100
+length = 10
 tau = 0.5
 win_len = 32
 
@@ -35,5 +35,5 @@ all_tk,all_ak,win_idx,K_i = FRIF.sliding_window_detect(x,t,32,tau)
 
 
 plt.plot(t,x)
-plt.stem(tk_corrtime,ak_corrtime,'r',use_line_collection = True)
+plt.stem(all_tk,all_ak,'r',use_line_collection = True)
 plt.stem(tk_true,ak_true,'k',use_line_collection = True)

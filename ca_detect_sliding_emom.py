@@ -56,7 +56,7 @@ def sliding_window_detect(x,t,win_len,tau, mode = 'estimate', fixed_K = None):
     #for some reason we don't actually use phi, just the time stamps??
     phi, t_phi = ges.generate_e_spline(alpha_vec, T/over_samp, T = T)
     t_diric = np.arange(-(P+1)/2,(P+1)/2 +1/over_samp,1/over_samp)*(2*np.pi)/(P+1)
-    #phi = scipy.special.diric(t_diric, P+1)
+    phi = scipy.special.diric(t_diric, P+1)
     phi = phi.real
         
     #generate ps
@@ -100,6 +100,11 @@ def sliding_window_detect(x,t,win_len,tau, mode = 'estimate', fixed_K = None):
                                                       tau, phi, t_phi,
                                                       alpha_0, lbda, T,
                                                       c_m_n, n_vec, K = fixed_K)
+            
+        #remove negative spikes?
+        pos_sp = ak >= 0
+        tk = tk[pos_sp]
+        ak = ak[pos_sp]
     
         all_tk.append(tk)
         all_ak.append(ak)
@@ -156,7 +161,7 @@ def sliding_window_detect_box_filtered(x,t,win_len,tau,shutter_length, mode = 'e
     #for some reason we don't actually use phi, just the time stamps??
     phi, t_phi = ges.generate_e_spline(alpha_vec, T/over_samp, T = T)
     t_diric = np.arange(-(P+1)/2,(P+1)/2 +1/over_samp,1/over_samp)*(2*np.pi)/(P+1)
-    #phi = scipy.special.diric(t_diric, P+1)
+    phi = scipy.special.diric(t_diric, P+1)
     phi = phi.real
         
     #generate psi
@@ -164,8 +169,13 @@ def sliding_window_detect_box_filtered(x,t,win_len,tau,shutter_length, mode = 'e
     beta_alpha_t, t_beta = ges.generate_e_spline(np.array([-alpha*T]), 1/over_samp)
     beta_alpha_t = np.concatenate(([0],beta_alpha_t[:0:-1]))
     psi = (T/over_samp)*scipy.signal.convolve(phi,beta_alpha_t)
+
     #add in the effect of the rolling shutter filter
-    shutter_t = np.linspace(0,2*shutter_length,np.diff(t_phi))
+    shutter_fcn = np.zeros(int(np.round(shutter_length/np.mean(np.diff(t_phi))))+2)
+    shutter_fcn[1:-1] = 1
+    shutter_fcn = shutter_fcn / np.sum(shutter_fcn)
+    #convolve psi with the shutter fcn
+    psi = scipy.signal.convolve(psi,shutter_fcn)
     
     t_psi = np.arange(len(psi))*T/512
     
@@ -204,10 +214,17 @@ def sliding_window_detect_box_filtered(x,t,win_len,tau,shutter_length, mode = 'e
                                                       alpha_0, lbda, T,
                                                       c_m_n, n_vec, K = fixed_K)
     
+        #remove negative spikes?
+        pos_sp = ak >= 0
+        tk = tk[pos_sp]
+        ak = ak[pos_sp]
+        
         all_tk.append(tk)
         all_ak.append(ak)
         win_idx.append(i_0*np.ones(len(tk)))
         K_i[i_0] = len(tk)
+    
+    
     
     
     

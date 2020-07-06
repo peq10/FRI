@@ -103,6 +103,7 @@ def estimate_K(sm):
     return K
 
 def circular_convolution(a,b):
+    #return scipy.signal.convolve(a,b,mode = 'same')
     return np.convolve(np.concatenate((a,a)),b)[len(b)-1:len(b)-1+len(a)]
     
     
