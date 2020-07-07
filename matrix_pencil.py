@@ -76,8 +76,12 @@ def matrix_pencil(sm,K = None, thresh = 0.3):
     U,s,_, = scipy.linalg.svd(S)    
     
     if K is None:
-        s = s/s.max()
-        K = np.sum(s>thresh)
+        
+        if s.max() == 0:
+            return np.array([])
+        else:
+            s = s/s.max()
+            K = np.sum(s>thresh)
     
     U = U[:,:K]
 
@@ -86,7 +90,7 @@ def matrix_pencil(sm,K = None, thresh = 0.3):
     Z = np.matmul(scipy.linalg.pinv(S1),S0)
     
     uu_k = scipy.linalg.eig(Z)[0]
-
+    
     return uu_k
 
 def matrix_pencil_noiseless(sm,K):

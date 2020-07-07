@@ -29,7 +29,7 @@ noise_level = 0
 
 
 #Make long signal of approx diracs
-t_k,a_k,t,x = FRIF.make_signal(length,1/T_s,firing_rate = lam,tau = 0.01,spike_std = 0)
+t_k,a_k,t,x = FRIF.make_signal(length,1/T_s,firing_rate = lam,tau = 0.001,spike_std = 0)
 
 plt.figure()
 plt.plot(t,x)
@@ -54,6 +54,7 @@ y = scipy.signal.convolve(x,h)
 y = y + np.random.normal(scale = noise_level*np.max(y),size = len(y))
 t_y = np.linspace(t[0] + t_h[0],t[-1]+t_h[-1],len(y)) - (t_h[-1] - t_h[0])/2
 plt.plot(t_y,y)
+plt.plot
 
 #get y_n samples
 n_vec = np.arange(win_len)
