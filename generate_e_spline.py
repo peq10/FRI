@@ -41,8 +41,6 @@ def generate_e_spline(alpha_vec,T_s,T = 1,mode = 'causal'):
     t         : Time stamps of the corresponding values of the phi vector.
     
     '''
-    if mode != 'causal':
-        raise NotImplementedError('Havent done different modes')
        
     #apply scaling
     T_s /= T
@@ -64,6 +62,15 @@ def generate_e_spline(alpha_vec,T_s,T = 1,mode = 'causal'):
     t *= T
     
     # TODO -  add the mode modifications to t
+    if mode == 'symmetric':
+        raise NotImplementedError('Only support causal or anticausal')
+    elif mode == 'anticausal':
+        phi = phi[::-1]
+        t = -t[::-1]
+    elif mode == 'causal':
+        pass
+    else:
+        raise ValueError('Mode not recognised')
     
     return phi, t
    

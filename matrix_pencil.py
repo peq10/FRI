@@ -46,6 +46,10 @@ def acmp_p(sm, K, M, P, p = 1):
     
     return uk
 
+def matrix_pencil_noiseless(sm,K):
+    
+    return uk
+
 
 if __name__ == '__main__':
     pass

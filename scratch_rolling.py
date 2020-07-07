@@ -16,12 +16,13 @@ import ca_detect_sliding_emom as cad
 import generate_e_spline as ges
 import get_c_mn_exp as gce
 import extract_decaying_exponentials as ede
+import scipy.linalg
 
 np.random.seed(0)
 
 fs_fast = 500
 fs = 10
-length = 10
+length = 6
 tau = 1
 
 if fs_fast%fs != 0:
@@ -46,7 +47,7 @@ T = np.mean(np.diff(t))
 
 #construct sampling kernel
 over_samp = 512
-win_len = 128
+win_len = 1000
 mode = 'estimate'
 N = win_len
 P = N/2
@@ -79,6 +80,35 @@ psi = scipy.signal.convolve(psi,shutter_fcn)
 #plt.plot(psi)
 t_psi = np.arange(len(psi))*T/512
 
+
+#now downsample phi, t_phi to remove oversamplign
+phi = phi[::over_samp]
+t_phi = t_phi[::over_samp]
+tst = scipy.signal.convolve(x,phi,mode = 'same')
+
+tst2 = tst[1:] - tst[:-1]*np.exp(-T/tau)
+
+sig = tst2[:1000]
+
+plt.plot(sig)
+
+#calculate signal moments
+n_vec = np.arange(len(sig))
+c_m_n = gce.get_c_mn_exp2(alpha_vec,n_vec,psi,t_psi,T = T)
+
+sm = np.sum(c_m_n*sig[None,:],-1)
+
+
+#locate the diracs
+K = 2
+S = scipy.linalg.toeplitz(sm[K+1:],sm[K+1::-1])
+_,_,V = scipy.linalg.svd(S)
+h = V[:,-1]
+uu_k = np.roots(h)
+pp_k = np.mod(np.angle(uu_k),2*np.pi)
+tt_k = T*pp_k/lbda
+
+'''
 #get cmn coefficients
 if N%2 == 0:
     n_vec = np.arange(-int(N/2),int(N/2))
@@ -87,9 +117,7 @@ else:
     
 
 c_m_n = gce.get_c_mn_exp2(alpha_vec,n_vec,psi,t_psi,T = T)
-#now downsample phi, t_phi to remove oversamplign
-phi = phi[::over_samp]
-t_phi = t_phi[::over_samp]
+
 
 #iterate through the vector x and detect expoentials in sliding window
 K_i = np.zeros(len(x) - win_len)
@@ -150,3 +178,5 @@ all_tk = np.concatenate(all_tk)
 plt.plot(t,x)
 plt.stem(all_tk,all_ak,'r',use_line_collection = True)
 plt.stem(tk_true,ak_true,'k',use_line_collection = True)
+
+'''
