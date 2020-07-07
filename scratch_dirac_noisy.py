@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 import generate_e_spline as ges
 import get_c_mn_exp as gcm
 import f.general_functions as gf
+import matrix_pencil as mp
 
 T= 1
 t_int = T*8
@@ -24,7 +25,7 @@ T_s = T/64
 
 #get diracs
 t_sig = np.arange(0,t_int,T_s)
-itk = [380,390]
+itk = [180,390]
 t_k = t_sig[itk]
 a_k = [1.5,3]
 
@@ -72,27 +73,7 @@ plt.plot(t_n,y_n,'.')
 s_m = np.sum(c_m_n*y_n[None,:],-1)
 
 #use matrix pencil to find - noisy case now
-M = np.ceil(len(s_m)/2).astype(int)
-S = scipy.linalg.toeplitz(s_m[M:],s_m[M::-1])
-
-U,_,_, = scipy.linalg.svd(S)
-U = U[:,:K]
-
-S0 = U[1:,:]
-S1 = U[:-1,:]
-Z = np.matmul(scipy.linalg.pinv(S1),S0)
-
-uu_k = scipy.linalg.eig(Z)[0]
-
-tt_k = np.real(np.log(uu_k)*T/(1j*lbda))
-
-
-A = np.zeros((K,K)).astype(np.complex128)
-for i in range(K):
-    A[i,:] = uu_k**i
-B = s_m[:K]
-b_k = scipy.linalg.solve(A,B)
-aa_k = np.real(b_k*np.exp(-1j*omega_0*tt_k/T))
+tt_k,aa_k = mp.retrieve_tk_ak(s_m,T,alpha_vec)
 
 plt.figure()
 plt.stem(tt_k+t_h[-1]/2,aa_k,'k')
