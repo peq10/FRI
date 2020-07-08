@@ -117,7 +117,7 @@ def matrix_pencil_noiseless(sm,K):
     uu_k = scipy.linalg.eig(Z)[0]
     return uu_k
 
-def retrieve_tk_ak(sm,T,alpha_vec, K = None,thresh = 0.3):
+def retrieve_tk_ak(sm,T,alpha_vec, K = None,thresh = 0.3, remove_negative = True):
     '''
     
 
@@ -154,6 +154,11 @@ def retrieve_tk_ak(sm,T,alpha_vec, K = None,thresh = 0.3):
     B = sm[:K]
     b_k = scipy.linalg.solve(A,B)
     a_k = np.real(b_k*np.exp(-1j*omega_0*t_k/T))
+    
+    if remove_negative:
+        pos = a_k > 0
+        a_k = a_k[pos]
+        t_k = t_k[pos]
 
     return t_k,a_k
 

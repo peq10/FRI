@@ -9,7 +9,16 @@ import numpy as np
 import scipy.signal
 import scipy.io
 import matplotlib.pyplot as plt
+import get_c_mn_exp as gcm
 
+def make_alpha_vec(win_len):
+    P = int(win_len/2)
+    m = np.arange(P+1)
+    alpha_0 = -1*np.pi/2
+    lbda = np.pi/P
+    alpha_m = alpha_0 +lbda*m
+    alpha_vec = 1j*alpha_m
+    return alpha_vec
 
 def generate_e_spline(alpha_vec,T_s,T = 1,mode = 'causal'):
     '''
@@ -74,6 +83,66 @@ def generate_e_spline(alpha_vec,T_s,T = 1,mode = 'causal'):
         raise ValueError('Mode not recognised')
     
     return phi, t
+   
+def decaying_exp_filters(win_len,T,tau,oversamp = 64):
+    '''
+    Generates the sampling filters and exponential reproducing filters for 
+    converting decaying exponentials into diracs and then recovering their
+    positions and amplitudes.
+
+    Parameters
+    ----------
+    win_len : TYPE
+        DESCRIPTION.
+    T : TYPE
+        DESCRIPTION.
+    tau : TYPE
+        DESCRIPTION.
+    oversamp : TYPE, optional
+        DESCRIPTION. The default is 64.
+
+    Raises
+    ------
+    NotImplementedError
+        DESCRIPTION.
+
+    Returns
+    -------
+    phi : TYPE
+        DESCRIPTION.
+    t_phi : TYPE
+        DESCRIPTION.
+    c_m_n : TYPE
+        DESCRIPTION.
+    n_vec : TYPE
+        DESCRIPTION.
+    alpha_vec : TYPE
+        DESCRIPTION.
+
+    '''
+    if win_len%2 != 0:
+        raise NotImplementedError('Only implemented even length windows')
+    
+    alpha_vec = make_alpha_vec(win_len)
+    phi,t_phi = generate_e_spline(alpha_vec, T/oversamp,T = T,mode = 'symmetric')
+    
+    #generate psi
+    alpha = 1/tau
+    beta_alpha_t, t_beta = generate_e_spline(np.array([-alpha*T]), T/oversamp,T = T,mode = 'causal')
+    beta_alpha_t = np.concatenate(([0],beta_alpha_t[:0:-1]))
+    psi = (T/oversamp)*scipy.signal.convolve(phi,beta_alpha_t)
+    t_psi = np.linspace(t_phi[0] + t_beta[0],t_phi[-1]+t_beta[-1],len(psi))
+                        
+    #remove oversampling
+    phi = phi[::oversamp]
+    t_phi = t_phi[::oversamp]
+    phi = phi.real
+    
+    #get c_m_n
+    n_vec = np.arange(int(-1*win_len/2),int(win_len/2))
+    c_m_n = gcm.get_c_mn_exp2(alpha_vec, n_vec, psi, t_psi, T = T)
+    
+    return phi,t_phi,c_m_n,n_vec,alpha_vec 
    
 def test_e_spline():
     correct = np.squeeze(scipy.io.loadmat('./phi.mat')['phi'])

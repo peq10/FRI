@@ -26,7 +26,9 @@ length = 10
 
 
 #Make long signal of decaying
-t_k,a_k,t,x = FRIF.make_signal(length,1/T,firing_rate = lam,tau = tau,spike_std = 0)
+t_k = []
+while len(t_k) == 0:
+    t_k,a_k,t,x = FRIF.make_signal(length,1/T,firing_rate = lam,tau = tau,spike_std = 0)
 
 win_len = 64
 
@@ -39,45 +41,53 @@ plt.plot(t,x)
 plt.plot(t,x,'.')
 
 
-
-#generate sampling e-spline
-oversamp = 64
-
-P = int(win_len/2)
-m = np.arange(P+1)
-
-alpha_0 = -1*np.pi/2
-lbda = np.pi/P
-alpha_m = alpha_0 +lbda*m
-alpha_vec = 1j*alpha_m
-
-phi,t_phi = ges.generate_e_spline(alpha_vec, T/oversamp,T = T,mode = 'symmetric')
-
-#generate psi
-alpha = 1/tau
-beta_alpha_t, t_beta = ges.generate_e_spline(np.array([-alpha*T]), T/oversamp,T = T,mode = 'causal')
-beta_alpha_t = np.concatenate(([0],beta_alpha_t[:0:-1]))
-
-psi = (T/oversamp)*scipy.signal.convolve(phi,beta_alpha_t)
-t_psi = np.linspace(t_phi[0] + t_beta[0],t_phi[-1]+t_beta[-1],len(psi))
-                    
-#remove oversampling
-phi = phi[::oversamp]
-t_phi = t_phi[::oversamp]
-
-phi = phi.real
-
-#sample signal
-y_n = T*scipy.signal.convolve(x,phi)
-
-t_y = np.linspace(t[0]+t_phi[0],t[-1]+t_phi[-1],len(y_n))
+phi,t_phi,c_m_n,n_vec,alpha_vec = ges.decaying_exp_filters(win_len, T, tau)
 
 
-plt.plot(t_y,y_n/y_n.max())
+def convert_exponential_to_dirac(t,x,phi,t_phi,tau):
+    '''
+    
 
-#reduce to dirac sampling
-z_n = y_n[1:] - y_n[:-1]*np.exp(-alpha*T)
-t_n = t_y[1:]
+    Parameters
+    ----------
+    t : TYPE
+        DESCRIPTION.
+    x : TYPE
+        DESCRIPTION.
+    phi : TYPE
+        DESCRIPTION.
+    t_phi : TYPE
+        DESCRIPTION.
+    tau : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    z_n : TYPE
+        DESCRIPTION.
+    t_n : TYPE
+        DESCRIPTION.
+
+    '''
+        
+    T = np.mean(np.diff(t))
+    
+    #sample signal with exp. reproducing kernel
+    y_n = T*scipy.signal.convolve(x,phi)
+    t_y = np.linspace(t[0]+t_phi[0],t[-1]+t_phi[-1],len(y_n))
+    
+    #reduce to dirac sampling
+    z_n = y_n[1:] - y_n[:-1]*np.exp(-T/tau)
+    t_n = t_y[1:]
+
+    return z_n,t_n
+
+
+
+
+
+z_n,t_n = convert_exponential_to_dirac(t,x,phi,t_phi,tau)
+
 
 
 
@@ -89,9 +99,7 @@ t_n = t_n[idx_0:idx_0+win_len]
 plt.plot(t_n,z_n/z_n.max())
 plt.stem(t_k,a_k,use_line_collection = 'True')
 
-#get c_m_n
-n_vec = np.arange(int(-1*win_len/2),(win_len/2))
-c_m_n = gcm.get_c_mn_exp2(alpha_vec, n_vec, psi, t_psi, T = T)
+
 
 #get s_m
 s_m = np.sum(c_m_n*z_n[None,:],-1)
