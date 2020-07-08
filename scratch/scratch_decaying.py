@@ -37,6 +37,7 @@ print(f'SNR: {SNR}')
 all_tk,all_ak = ee.sliding_window_detect(t,x,tau,win_len,fixed_K = None)
 
 
+
 plt.figure()
 plt.plot(t,x)
 

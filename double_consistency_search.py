@@ -117,7 +117,7 @@ def example(length,noise_level):
         tk_true,ak_true,t,x = FRIF.make_signal(length,fs,tau = tau, noise_level = noise_level,spike_std = 0)
         num_spikes = len(tk_true)
 
-    tk,ak,_ = double_consistency_histogram(x, t, tau,hist_thresh = 0.1,winlens = [64,16],spike_thresh = 0)
+    tk,ak,_ = double_consistency_histogram(x, t, tau,hist_thresh = 0.1,winlens = [64,16],spike_thresh = 0.05)
     
     plt.cla()
     plt.plot(t,x)

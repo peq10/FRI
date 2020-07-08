@@ -17,18 +17,24 @@ import generate_e_spline as ges
 import matrix_pencil as mp
 import extract_exponentials as ee
 
-#np.random.seed(23)
+np.random.seed(23)
 
 T = 1/10
 lam = 0.2
 tau = 0.5
 length = 10
-
+over
 
 #Make long signal of decaying
 t_k = []
 while len(t_k) == 0:
     t_k,a_k,t,x = FRIF.make_signal(length,1/T,firing_rate = lam,tau = tau,spike_std = 0)
+
+#add rolling shutter 
+shutter_length = T/10
+
+shutter_fcn = np.ones(shutter_length/)
+
 
 win_len = 64
 
@@ -42,7 +48,6 @@ plt.plot(t,x,'.')
 
 
 phi,t_phi,c_m_n,n_vec,alpha_vec = ges.decaying_exp_filters(win_len, T, tau)
-
 z_n,t_n = ee.convert_exponential_to_dirac(t,x,phi,t_phi,tau)
 
 
