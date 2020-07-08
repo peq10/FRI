@@ -7,11 +7,11 @@ Created on Tue Jun  9 17:38:11 2020
 """
 
 import numpy as np
-import ca_detect_sliding_emom as ca_detect
 import FRI_functions as FRIF
 import matplotlib.pyplot as plt
 import scipy.stats
 import cosmic.cosmic
+import extract_exponentials as ee
 #np.random.seed(0)
 
 def detect_spikes(jhist,bins,all_tk,all_ak,thresh,):
@@ -28,30 +28,19 @@ def detect_spikes(jhist,bins,all_tk,all_ak,thresh,):
     return sp_t,amplitudes
 
 def double_consistency_histogram(x,t,tau,winlens = [32,8],
-                                 modes = ['estimate','fixed'],
-                                 fixed_K = 1, 
-                                 spike_thresh = 0,
+                                 fixed_K = [None,1],
+                                 spike_thresh = 0.1,
                                  hist_res = 1,
-                                 hist_thresh = 0.05,
-                                 box_filter = False,
-                                 box_filter_length = None):
+                                 hist_thresh = 0.05):
     
     all_tk = []
     all_ak = []
 
     for idx,win_len in enumerate(winlens):
-        if modes[idx] == 'fixed':
-            fixed_K_val= fixed_K
-        else:
-            fixed_K_val = None
-                
-        if not box_filter:
-            tk,ak,_,_ = ca_detect.sliding_window_detect(x, t, win_len, tau, mode = modes[idx], fixed_K = fixed_K_val)
-        else:
-            tk,ak,_,_ = ca_detect.sliding_window_detect_box_filtered(x, t, win_len, tau, box_filter_length, mode = modes[idx], fixed_K = fixed_K_val)
-            
-        all_tk.append(tk)
-        all_ak.append(ak)
+        tk,ak = ee.sliding_window_detect(t,x,tau,win_len,fixed_K = fixed_K[idx])
+        
+        all_tk.append(np.concatenate(tk))
+        all_ak.append(np.concatenate(ak))
         
         
     #remove spikes below certain size?
@@ -128,7 +117,7 @@ def example(length,noise_level):
         tk_true,ak_true,t,x = FRIF.make_signal(length,fs,tau = tau, noise_level = noise_level,spike_std = 0)
         num_spikes = len(tk_true)
 
-    tk,ak,_ = double_consistency_histogram(x, t, tau,hist_thresh = 0.1,winlens = [128,32],spike_thresh = 0)
+    tk,ak,_ = double_consistency_histogram(x, t, tau,hist_thresh = 0.1,winlens = [64,16],spike_thresh = 0)
     
     plt.cla()
     plt.plot(t,x)
@@ -136,6 +125,7 @@ def example(length,noise_level):
     plt.stem(tk_true,ak_true,'r', label = 'True',markerfmt='ro')
     plt.stem(tk,ak,'k',label = 'Detected',markerfmt ='xk',linefmt = '--k')
     plt.legend()
+    return tk,ak
     
 if __name__ == '__main__':
-    example(40,0.001)
+    tk,ak = example(40,0.1)

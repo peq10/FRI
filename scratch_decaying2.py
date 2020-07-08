@@ -14,8 +14,8 @@ import scipy.signal
 import FRI_functions as FRIF
 
 import generate_e_spline as ges
-import get_c_mn_exp as gcm
 import matrix_pencil as mp
+import extract_exponentials as ee
 
 #np.random.seed(23)
 
@@ -43,52 +43,7 @@ plt.plot(t,x,'.')
 
 phi,t_phi,c_m_n,n_vec,alpha_vec = ges.decaying_exp_filters(win_len, T, tau)
 
-
-def convert_exponential_to_dirac(t,x,phi,t_phi,tau):
-    '''
-    
-
-    Parameters
-    ----------
-    t : TYPE
-        DESCRIPTION.
-    x : TYPE
-        DESCRIPTION.
-    phi : TYPE
-        DESCRIPTION.
-    t_phi : TYPE
-        DESCRIPTION.
-    tau : TYPE
-        DESCRIPTION.
-
-    Returns
-    -------
-    z_n : TYPE
-        DESCRIPTION.
-    t_n : TYPE
-        DESCRIPTION.
-
-    '''
-        
-    T = np.mean(np.diff(t))
-    
-    #sample signal with exp. reproducing kernel
-    y_n = T*scipy.signal.convolve(x,phi)
-    t_y = np.linspace(t[0]+t_phi[0],t[-1]+t_phi[-1],len(y_n))
-    
-    #reduce to dirac sampling
-    z_n = y_n[1:] - y_n[:-1]*np.exp(-T/tau)
-    t_n = t_y[1:]
-
-    return z_n,t_n
-
-
-
-
-
-z_n,t_n = convert_exponential_to_dirac(t,x,phi,t_phi,tau)
-
-
+z_n,t_n = ee.convert_exponential_to_dirac(t,x,phi,t_phi,tau)
 
 
 idx_0 = np.argmin(np.abs(t_n))
