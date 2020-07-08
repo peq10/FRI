@@ -63,7 +63,8 @@ def generate_e_spline(alpha_vec,T_s,T = 1,mode = 'causal'):
     
     # TODO -  add the mode modifications to t
     if mode == 'symmetric':
-        raise NotImplementedError('Only support causal or anticausal')
+        idx_max = np.argmax(phi)
+        t = t - t[idx_max]
     elif mode == 'anticausal':
         phi = phi[::-1]
         t = -t[::-1]
