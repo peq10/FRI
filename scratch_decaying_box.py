@@ -23,7 +23,7 @@ import get_c_mn_exp as gcm
 T = 1/10
 lam = 0.2
 tau = 0.5
-length = 10
+length = 20
 oversamp = 32
 
 #Make long signal of decaying
@@ -45,7 +45,7 @@ t = t[::oversamp]
 x = x[::oversamp]
 
 
-win_len = 64
+win_len = 128
 
 t = t[:win_len]
 x = x[:win_len]
@@ -54,8 +54,6 @@ x = x[:win_len]
 plt.figure()
 plt.plot(t,x)
 plt.plot(t,x,'.')
-
-oversamp = 64
 
 alpha_vec = ges.make_alpha_vec(win_len)
 phi,t_phi = ges.generate_e_spline(alpha_vec, T/oversamp,T = T,mode = 'symmetric')
@@ -67,15 +65,16 @@ beta_alpha_t = np.concatenate(([0],beta_alpha_t[:0:-1]))
 psi = (T/oversamp)*scipy.signal.convolve(phi,beta_alpha_t)
 
 #generate shutter fcn
-shutter_fcn = np.zeros(int(np.round(shutter_length*oversamp/T))*2)
-shutter_fcn[:int(np.round(shutter_length*oversamp/T))] = 1/int(np.round(shutter_length*oversamp/T))
-shutter_t = np.linspace(0,shutter_length*2,len(shutter_fcn))
+shutter_fcn = np.zeros(int(np.round(shutter_length*oversamp/T))+2)
+shutter_fcn[1:-1] = 1/int(np.round(shutter_length*oversamp/T))
+shutter_t = np.linspace(0,shutter_length,len(shutter_fcn))
 
 #add shutter to psi
 psi = scipy.signal.convolve(psi,shutter_fcn)
 
 t_psi = np.linspace(t_phi[0] + t_beta[0] + shutter_t[0],t_phi[-1]+t_beta[-1] +shutter_t[-1],len(psi))
-                    
+#t_psi = np.linspace(t_phi[0] + t_beta[0],t_phi[-1]+t_beta[-1],len(psi))
+                  
 #remove oversampling
 phi = phi[::oversamp]
 t_phi = t_phi[::oversamp]
@@ -85,12 +84,10 @@ phi = phi.real
 n_vec = np.arange(int(-1*win_len/2),int(win_len/2))
 c_m_n = gcm.get_c_mn_exp2(alpha_vec, n_vec, psi, t_psi, T = T)
     
-    
+
+#phi,t_phi,c_m_n,n_vec,alpha_vec = ges.decaying_exp_filters(win_len,T,tau)
+
 z_n,t_n = ee.convert_exponential_to_dirac(t,x,phi,t_phi,tau)
-
-
-
-
 
 
 idx_0 = np.argmin(np.abs(t_n))
@@ -105,7 +102,23 @@ plt.stem(t_k,a_k,use_line_collection = 'True')
 
 #get s_m
 s_m = np.sum(c_m_n*z_n[None,:],-1)
+
+
 uk = mp.matrix_pencil(s_m,K = 2)
+lbda = np.mean(np.real(np.diff(alpha_vec)/1j))
+omega_0 = np.real(alpha_vec[0]/1j)
+K = len(uk)
+
+tk = np.real(np.log(uk)*T/(1j*lbda))
+A = np.zeros((K,K)).astype(np.complex128)
+for i in range(K):
+    A[i,:] = uk**i
+B = s_m[:K]
+b_k = scipy.linalg.solve(A,B)
+ak = np.real(b_k*np.exp(-1j*omega_0*tk/T))
+
+
+
 #retrieve t_k,ak
 tk,ak = mp.retrieve_tk_ak(s_m, T, alpha_vec,K = None,remove_negative=True)
 
@@ -113,6 +126,8 @@ tk += n_vec[-1]*T -1*shutter_length
 
 plt.stem(tk,ak,'r',use_line_collection = 'True')
 
-print(np.sort(tk) - np.sort(t_k))
+#print(np.sort(tk) - np.sort(t_k))
 
-
+#plt.figure()
+#plt.plot(s_m.real)
+#plt.plot(s_m.imag)

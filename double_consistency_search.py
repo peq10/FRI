@@ -31,13 +31,17 @@ def double_consistency_histogram(x,t,tau,winlens = [32,8],
                                  fixed_K = [None,1],
                                  spike_thresh = 0.1,
                                  hist_res = 1,
-                                 hist_thresh = 0.05):
+                                 hist_thresh = 0.05,
+                                 shutter_length = None):
     
     all_tk = []
     all_ak = []
 
     for idx,win_len in enumerate(winlens):
-        tk,ak = ee.sliding_window_detect(t,x,tau,win_len,fixed_K = fixed_K[idx])
+        if shutter_length is None:
+            tk,ak = ee.sliding_window_detect(t,x,tau,win_len,fixed_K = fixed_K[idx])
+        else:
+            tk,ak = ee.sliding_window_detect_box_filtered(t, x, tau, win_len, shutter_length,fixed_K = fixed_K[idx])
         
         all_tk.append(np.concatenate(tk))
         all_ak.append(np.concatenate(ak))
@@ -69,6 +73,15 @@ def double_consistency_histogram(x,t,tau,winlens = [32,8],
 
     return tk,ak,(jhist,bins,all_tk,all_ak)
 
+
+def compare_spike_trains(tk,tk_true,noise_level,fs,tau):
+    #use cosmic metric for spike train comparison
+    crb       = cosmic.cosmic.compute_crb(1/fs, 1, noise_level**2, alpha = 1/tau, gamma = 10**3)
+    # get metric width from crb
+    width     = cosmic.cosmic.compute_metric_width(crb)
+
+    cos_score, cos_prec, cos_call,_,_, _ = cosmic.cosmic.compute_score(width,tk_true,tk)
+    return cos_score
 
 def calculate_ROC(length,noise_level,evals = 25):
     np.random.seed(0)
