@@ -122,9 +122,9 @@ ak = np.real(b_k*np.exp(-1j*omega_0*tk/T))
 #retrieve t_k,ak
 tk,ak = mp.retrieve_tk_ak(s_m, T, alpha_vec,K = None,remove_negative=True)
 
-tk += n_vec[-1]*T -1*shutter_length
+tk += (n_vec[-1]-1)*T -1*shutter_length
 
-plt.stem(tk,ak,'r',use_line_collection = 'True')
+plt.stem(tk,np.ones_like(tk)*3,'r',use_line_collection = 'True')
 
 #print(np.sort(tk) - np.sort(t_k))
 

@@ -55,7 +55,7 @@ def double_consistency_histogram(x,t,tau,winlens = [32,8],
 
     
     #generate histogram
-    hist_res = 1
+    hist_res = 0.1
     bins = np.linspace(t[1],t[-1],int(len(t)*hist_res))
     
     all_hists = []
@@ -80,8 +80,8 @@ def compare_spike_trains(tk,tk_true,noise_level,fs,tau):
     # get metric width from crb
     width     = cosmic.cosmic.compute_metric_width(crb)
 
-    cos_score, cos_prec, cos_call,_,_, _ = cosmic.cosmic.compute_score(width,tk_true,tk)
-    return cos_score
+    cos_score, cos_prec, cos_call,y,y_hat,t  = cosmic.cosmic.compute_score(width,tk_true,tk)
+    return cos_score,(cos_prec, cos_call,y,y_hat,t)
 
 def calculate_ROC(length,noise_level,evals = 25):
     np.random.seed(0)
