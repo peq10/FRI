@@ -9,7 +9,7 @@ import numpy as np
 import scipy.signal
 import scipy.io
 import matplotlib.pyplot as plt
-from functions import get_c_mn_exp as gcm
+from FRI_detect.functions import get_c_mn_exp as gcm
 
 def make_alpha_vec(win_len):
     P = int(win_len/2)

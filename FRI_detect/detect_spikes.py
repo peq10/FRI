@@ -6,11 +6,11 @@ Created on Wed Jul 15 14:36:20 2020
 @author: peter
 """
 
-import functions.double_consistency_search as dc
+import FRI_detect.functions.double_consistency_search as dc
 import numpy as np
 
 
-def detect_spikes(x,t,tau, windows = []):
+def detect_spikes(t,x,tau, windows = []):
     '''
     Parameters
     ----------

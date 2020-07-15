@@ -11,7 +11,7 @@ import scipy.stats
 import cosmic.cosmic
 
 
-from functions import extract_exponentials as ee
+from FRI_detect.functions import extract_exponentials as ee
 
 
 def detect_spikes(jhist,bins,all_tk,all_ak,thresh):

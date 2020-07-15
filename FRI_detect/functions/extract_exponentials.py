@@ -8,8 +8,8 @@ Created on Wed Jul  8 13:20:00 2020
 import numpy as np
 import scipy.signal
 
-from functions import matrix_pencil as mp
-from functions import generate_e_spline as ges
+from FRI_detect.functions import matrix_pencil as mp
+from FRI_detect.functions import generate_e_spline as ges
 
 def convert_exponential_to_dirac(t,x,phi,t_phi,tau):
     '''
