@@ -106,5 +106,4 @@ def sliding_window_detect_box_filtered(t,x,tau,win_len,shutter_length,fixed_K = 
     phi,t_phi,c_m_n,n_vec,alpha_vec = ges.box_decaying_exp_filters(win_len, T, tau, shutter_length)
     z_n,t_n = convert_exponential_to_dirac(t,x,phi,t_phi,tau)
     all_tk,all_ak = window_extract(z_n,t_n,c_m_n,n_vec,alpha_vec,fixed_K=fixed_K)
-    all_tk = [x - shutter_length for x in all_tk]
     return all_tk,all_ak

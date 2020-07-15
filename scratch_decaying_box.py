@@ -32,7 +32,7 @@ while len(t_k) == 0:
     t_k,a_k,t,x = FRIF.make_signal(length,(1/T)*oversamp,firing_rate = lam,tau = tau,spike_std = 0)
 
 #add rolling shutter 
-shutter_length = T*10
+shutter_length = T*20
 
 shutter_fcn = np.zeros(int(np.round(shutter_length*oversamp/T))*2)
 shutter_fcn[:int(np.round(shutter_length*oversamp/T))] = 1/int(np.round(shutter_length*oversamp/T))
@@ -67,7 +67,7 @@ psi = (T/oversamp)*scipy.signal.convolve(phi,beta_alpha_t)
 #generate shutter fcn
 shutter_fcn = np.zeros(int(np.round(shutter_length*oversamp/T))+2)
 shutter_fcn[1:-1] = 1/int(np.round(shutter_length*oversamp/T))
-shutter_t = np.linspace(0,shutter_length,len(shutter_fcn))
+shutter_t = np.linspace(-1*shutter_length,0,len(shutter_fcn))
 
 #add shutter to psi
 psi = scipy.signal.convolve(psi,shutter_fcn)
@@ -122,9 +122,9 @@ ak = np.real(b_k*np.exp(-1j*omega_0*tk/T))
 #retrieve t_k,ak
 tk,ak = mp.retrieve_tk_ak(s_m, T, alpha_vec,K = None,remove_negative=True)
 
-tk += (n_vec[-1]-1)*T -1*shutter_length
+tk += (n_vec[-1]-1)*T #-1*shutter_length
 
-plt.stem(tk,np.ones_like(tk)*3,'r',use_line_collection = 'True')
+plt.stem(tk,ak,'r',use_line_collection = 'True')
 
 #print(np.sort(tk) - np.sort(t_k))
 

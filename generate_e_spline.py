@@ -187,7 +187,7 @@ def box_decaying_exp_filters(win_len,T,tau,shutter_length,oversamp = 64):
     #generate shutter fcn
     shutter_fcn = np.zeros(int(np.round(shutter_length*oversamp/T))*2)
     shutter_fcn[:int(np.round(shutter_length*oversamp/T))] = 1/int(np.round(shutter_length*oversamp/T))
-    shutter_t = np.linspace(0,shutter_length*2,len(shutter_fcn))
+    shutter_t = np.linspace(-1*shutter_length,shutter_length,len(shutter_fcn))
     
     #add shutter to psi
     psi = scipy.signal.convolve(psi,shutter_fcn)

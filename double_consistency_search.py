@@ -14,9 +14,9 @@ import cosmic.cosmic
 import extract_exponentials as ee
 #np.random.seed(0)
 
-def detect_spikes(jhist,bins,all_tk,all_ak,thresh,):
+def detect_spikes(jhist,bins,all_tk,all_ak,thresh):
     peaks = scipy.signal.find_peaks(jhist/np.nanmax(jhist) > thresh)[0]
-    sp_t = bins[peaks]
+    sp_t = bins[peaks]  + np.mean(np.diff(bins))/2
     delta = np.mean(np.diff(bins))
     precision = 1
     amplitudes = np.zeros(len(sp_t))
@@ -49,13 +49,12 @@ def double_consistency_histogram(x,t,tau,winlens = [32,8],
         
     #remove spikes below certain size?
     for idx in range(len(all_ak)):
-        keep = all_ak[idx] > spike_thresh*np.max(all_ak[idx])
+        keep = all_ak[idx] > spike_thresh
         all_ak[idx] = all_ak[idx][keep]
         all_tk[idx] = all_tk[idx][keep]
 
     
     #generate histogram
-    hist_res = 0.1
     bins = np.linspace(t[1],t[-1],int(len(t)*hist_res))
     
     all_hists = []
