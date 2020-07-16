@@ -32,6 +32,38 @@ def double_consistency_histogram(x,t,tau,winlens = [32,8],
                                  spike_thresh = 0.1,
                                  hist_res = 1,
                                  hist_thresh = 0.05):
+    '''
+    
+
+    Parameters
+    ----------
+    x : TYPE
+        DESCRIPTION.
+    t : TYPE
+        DESCRIPTION.
+    tau : TYPE
+        DESCRIPTION.
+    winlens : TYPE, optional
+        DESCRIPTION. The default is [32,8].
+    fixed_K : TYPE, optional
+        DESCRIPTION. The default is [None,1].
+    spike_thresh : TYPE, optional
+        DESCRIPTION. The default is 0.1.
+    hist_res : TYPE, optional
+        DESCRIPTION. The default is 1.
+    hist_thresh : TYPE, optional
+        DESCRIPTION. The default is 0.05.
+
+    Returns
+    -------
+    tk : TYPE
+        DESCRIPTION.
+    ak : TYPE
+        DESCRIPTION.
+    hist_data : TYPE
+        DESCRIPTION.
+
+    '''
     
     all_tk = []
     all_ak = []
@@ -64,8 +96,8 @@ def double_consistency_histogram(x,t,tau,winlens = [32,8],
     
     tk,ak = detect_spikes(jhist, bins, all_tk, all_ak, hist_thresh)
 
-
-    return tk,ak,(jhist,bins,all_tk,all_ak)
+    hist_data = (jhist,bins,all_tk,all_ak)
+    return tk,ak,hist_data
 
 
 def compare_spike_trains(tk,tk_true,noise_level,fs,tau):

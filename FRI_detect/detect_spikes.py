@@ -10,7 +10,7 @@ import FRI_detect.functions.double_consistency_search as dc
 import numpy as np
 
 
-def detect_spikes(t,x,tau, windows = []):
+def detect_spikes(t,x,tau, windows = [32,8]):
     '''
     Parameters
     ----------
@@ -32,17 +32,6 @@ def detect_spikes(t,x,tau, windows = []):
 
     '''
     
-    
-    if windows == []:
-        T = np.mean(np.diff(t))
-        
-        win_len1 = np.round(T*32*8)
-        if win_len1%2 != 0:
-            win_len1 -= 1
-            
-        win_len2 = win_len1/2
-        
-        windows = [win_len1,win_len2]
 
     
     tk,_,_ = dc.double_consistency_histogram(x,t,tau,winlens = windows,
