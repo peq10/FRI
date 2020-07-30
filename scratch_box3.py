@@ -12,10 +12,7 @@ import matplotlib.pyplot as plt
 import scipy.signal
 
 
-import FRI_detect.functions.generate_e_spline as ges
-import FRI_detect.functions.matrix_pencil as mp
-import FRI_detect.functions.extract_exponentials as ee
-import FRI_detect.functions.get_c_mn_exp as gcm
+import FRI_detect.functions.double_consistency_search as dc
 import FRI_detect.functions.simulate_spike_train as sst
 
 def calculate_mean_offset(tk,tk_true):
@@ -37,9 +34,9 @@ oversamp = 64
 tk_true,ak_true,t,x = sst.make_signal(length,(1/T)*oversamp,firing_rate = lam,tau = tau,spike_std = 0)
 
 
-if False:
+if True:
     #add rolling shutter 
-    shutter_length = T*5
+    shutter_length = T*2
     
     shutter_fcn = np.zeros(int(np.round(shutter_length*oversamp/T))+2)
     shutter_fcn[1:-1] = 1/int(np.round(shutter_length*oversamp/T))
@@ -54,7 +51,7 @@ else:
     t = t[::oversamp]
     x = x[::oversamp]
 
-sc = 0.001*np.max(x)
+sc = 0.1*np.max(x)
 noise = np.random.normal(scale = sc,size = len(x))
 x += noise
 

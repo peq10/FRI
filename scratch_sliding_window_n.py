@@ -18,7 +18,7 @@ import FRI_detect.functions.simulate_spike_train as sst
 np.random.seed(0)
 
 oversamp = 64
-length = 20
+length = 30
 lam = 0.5
 T = 1/10
 T_s = T/oversamp
@@ -30,9 +30,9 @@ tau = 0.5
 t_k,a_k,t,x = sst.make_signal(length,(1/T)*oversamp,firing_rate = lam,tau = tau,spike_std = 0)
 
 
-if False:
+if True:
     #add rolling shutter 
-    shutter_length = T*1
+    shutter_length = T*10
     
     shutter_fcn = np.zeros(int(np.round(shutter_length*oversamp/T))+2)
     shutter_fcn[1:-1] = 1/int(np.round(shutter_length*oversamp/T))
@@ -50,13 +50,13 @@ else:
 #plt.figure()
 #plt.plot(t,x)
 taper = True
-win_len = 64
-phi,t_phi,c_m_n,n_vec,alpha_vec = ges.decaying_exp_filters(win_len, T, tau)
+win_len = 102
+phi,t_phi,c_m_n,n_vec,alpha_vec = ges.box_decaying_exp_filters(win_len, T, tau, shutter_length)
 z_n,t_n = ee.convert_exponential_to_dirac(t,x,phi,t_phi,tau)
 all_tk1,all_ak1 = ee.window_extract(z_n,t_n,c_m_n,n_vec,alpha_vec,fixed_K=None,taper_window = taper)
 
-win_len2 =16
-phi,t_phi,c_m_n,n_vec,alpha_vec = ges.decaying_exp_filters(win_len2, T, tau)
+win_len2 = 32
+phi,t_phi,c_m_n,n_vec,alpha_vec =  ges.box_decaying_exp_filters(win_len2, T, tau, shutter_length)
 z_n,t_n = ee.convert_exponential_to_dirac(t,x,phi,t_phi,tau)
 all_tk2,all_ak2 = ee.window_extract(z_n,t_n,c_m_n,n_vec,alpha_vec,fixed_K=1,taper_window = taper)
     
@@ -68,8 +68,8 @@ plt.cla()
 for idx in range(len(all_tk1)):
     plt.plot(all_tk1[idx],np.ones(len(all_tk1[idx]))+idx,'.k')
 
-#for idx in range(len(all_tk2)):
-#    plt.plot(all_tk2[idx],np.ones(len(all_tk2[idx]))+idx + len(all_tk1),'.k')
+for idx in range(len(all_tk2)):
+    plt.plot(all_tk2[idx],np.ones(len(all_tk2[idx]))+idx + len(all_tk1),'.k')
 
 idx += len(all_tk1)
 

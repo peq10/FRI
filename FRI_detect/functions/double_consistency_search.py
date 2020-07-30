@@ -31,7 +31,8 @@ def double_consistency_histogram(x,t,tau,winlens = [32,8],
                                  fixed_K = [None,1],
                                  spike_thresh = 0.1,
                                  hist_res = 1,
-                                 hist_thresh = 0.05):
+                                 hist_thresh = 0.05,
+                                 shutter_length = None):
     '''
     
 
@@ -69,7 +70,10 @@ def double_consistency_histogram(x,t,tau,winlens = [32,8],
     all_ak = []
 
     for idx,win_len in enumerate(winlens):
-        tk,ak = ee.sliding_window_detect(t,x,tau,win_len,fixed_K = fixed_K[idx])
+        if shutter_length is None:
+            tk,ak = ee.sliding_window_detect(t,x,tau,win_len,fixed_K = fixed_K[idx])
+        else:
+            tk,ak = ee.sliding_window_detect_box_filtered(t,x,tau,win_len,shutter_length,fixed_K = fixed_K[idx], taper_window = True)
         all_tk.append(np.concatenate(tk))
         all_ak.append(np.concatenate(ak))
         

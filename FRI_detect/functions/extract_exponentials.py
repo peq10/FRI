@@ -101,7 +101,7 @@ def window_extract(z_n,t_n,c_m_n,n_vec,alpha_vec, fixed_K = None, taper_window =
     return all_tk,all_ak
 
 
-def sliding_window_detect(t,x,tau,win_len,fixed_K = None):
+def sliding_window_detect(t,x,tau,win_len,fixed_K = None, taper_window = False):
     '''
     
 
@@ -129,10 +129,38 @@ def sliding_window_detect(t,x,tau,win_len,fixed_K = None):
     T = np.mean(np.diff(t))
     phi,t_phi,c_m_n,n_vec,alpha_vec = ges.decaying_exp_filters(win_len, T, tau)
     z_n,t_n = convert_exponential_to_dirac(t,x,phi,t_phi,tau)
-    all_tk,all_ak = window_extract(z_n,t_n,c_m_n,n_vec,alpha_vec,fixed_K=fixed_K)
+    all_tk,all_ak = window_extract(z_n,t_n,c_m_n,n_vec,alpha_vec,fixed_K=fixed_K,taper_window=taper_window)
     return all_tk,all_ak
 
-def sliding_window_detect_box_filtered(t,x,tau,win_len,shutter_length,fixed_K = None, taper_window = False):
+def sliding_window_detect_box_filtered(t,x,tau,win_len,shutter_length,fixed_K = None, taper_window = True):
+    '''
+    
+
+    Parameters
+    ----------
+    t : TYPE
+        DESCRIPTION.
+    x : TYPE
+        DESCRIPTION.
+    tau : TYPE
+        DESCRIPTION.
+    win_len : TYPE
+        DESCRIPTION.
+    shutter_length : TYPE
+        DESCRIPTION.
+    fixed_K : TYPE, optional
+        DESCRIPTION. The default is None.
+    taper_window : TYPE, optional
+        DESCRIPTION. The default is False.
+
+    Returns
+    -------
+    all_tk : TYPE
+        DESCRIPTION.
+    all_ak : TYPE
+        DESCRIPTION.
+
+    '''
     T = np.mean(np.diff(t))
     phi,t_phi,c_m_n,n_vec,alpha_vec = ges.box_decaying_exp_filters(win_len, T, tau, shutter_length)
     z_n,t_n = convert_exponential_to_dirac(t,x,phi,t_phi,tau)
