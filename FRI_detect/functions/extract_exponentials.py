@@ -50,7 +50,7 @@ def convert_exponential_to_dirac(t,x,phi,t_phi,tau):
     return z_n,t_n
 
 
-def window_extract(z_n,t_n,c_m_n,n_vec,alpha_vec, fixed_K = None):
+def window_extract(z_n,t_n,c_m_n,n_vec,alpha_vec, fixed_K = None, taper_window = False):
     '''
     Extracts exponentials in a sliding window
 
@@ -79,6 +79,12 @@ def window_extract(z_n,t_n,c_m_n,n_vec,alpha_vec, fixed_K = None):
     sliding_idx = n_vec[None,:] + np.arange(len(z_n) - len(n_vec) + 1)[:,None]
     z_n_window = z_n[sliding_idx]
     t_n_window = t_n[sliding_idx] 
+    
+    #apply a window function to remove border effects
+    if taper_window:
+        taper = scipy.signal.windows.hann(len(n_vec))
+        z_n_window *= taper[None,:]
+        
 
     #Calculate moments
     s_m_window = np.sum(c_m_n[:,None,:]*z_n_window[None,:,:],-1)
