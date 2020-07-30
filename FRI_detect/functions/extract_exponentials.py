@@ -82,7 +82,7 @@ def window_extract(z_n,t_n,c_m_n,n_vec,alpha_vec, fixed_K = None, taper_window =
     
     #apply a window function to remove border effects
     if taper_window:
-        taper = scipy.signal.windows.hann(len(n_vec))
+        taper = scipy.signal.windows.tukey(len(n_vec),alpha = 0.5,sym = True)
         z_n_window *= taper[None,:]
         
 
