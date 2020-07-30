@@ -144,6 +144,66 @@ def decaying_exp_filters(win_len,T,tau,oversamp = 64):
     
     return phi,t_phi,c_m_n,n_vec,alpha_vec 
 
+def box_decaying_exp_filters(win_len,T,tau,shutter_length,oversamp = 64):
+    '''
+    For box filtered
+
+    Parameters
+    ----------
+    win_len : TYPE
+        DESCRIPTION.
+    T : TYPE
+        DESCRIPTION.
+    tau : TYPE
+        DESCRIPTION.
+    shutter_length : TYPE
+        DESCRIPTION.
+    oversamp : TYPE, optional
+        DESCRIPTION. The default is 64.
+
+    Returns
+    -------
+    phi : TYPE
+        DESCRIPTION.
+    t_phi : TYPE
+        DESCRIPTION.
+    c_m_n : TYPE
+        DESCRIPTION.
+    n_vec : TYPE
+        DESCRIPTION.
+    alpha_vec : TYPE
+        DESCRIPTION.
+
+    '''
+    alpha_vec = make_alpha_vec(win_len)
+    phi,t_phi = generate_e_spline(alpha_vec, T/oversamp,T = T,mode = 'symmetric')
+    
+    #generate psi
+    alpha = 1/tau
+    beta_alpha_t, t_beta = generate_e_spline(np.array([-alpha*T]), T/oversamp,T = T,mode = 'causal')
+    beta_alpha_t = np.concatenate(([0],beta_alpha_t[:0:-1]))
+    psi = (T/oversamp)*scipy.signal.convolve(phi,beta_alpha_t)
+    
+    #generate shutter fcn
+    shutter_fcn = np.zeros(int(np.round(shutter_length*oversamp/T))*2)
+    shutter_fcn[:int(np.round(shutter_length*oversamp/T))] = 1/int(np.round(shutter_length*oversamp/T))
+    shutter_t = np.linspace(-1*shutter_length,shutter_length,len(shutter_fcn))
+    
+    #add shutter to psi
+    psi = scipy.signal.convolve(psi,shutter_fcn)
+    
+    t_psi = np.linspace(t_phi[0] + t_beta[0] + shutter_t[0],t_phi[-1]+t_beta[-1] +shutter_t[-1],len(psi))
+                        
+    #remove oversampling
+    phi = phi[::oversamp]
+    t_phi = t_phi[::oversamp]
+    phi = phi.real
+    
+    #get c_m_n
+    n_vec = np.arange(int(-1*win_len/2),int(win_len/2))
+    c_m_n = gcm.get_c_mn_exp2(alpha_vec, n_vec, psi, t_psi, T = T)
+    
+    return phi,t_phi,c_m_n,n_vec,alpha_vec 
    
 def test_e_spline():
     correct = np.squeeze(scipy.io.loadmat('./phi.mat')['phi'])
