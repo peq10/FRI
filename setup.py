@@ -12,7 +12,7 @@ setup(
     name='FRI',
     version='0.1',
     license='MIT',
-    description='A python package for FRI detection of calcium transients.',
+    description='A python package for FRI detection of calcium transients. Based on the method published in https://doi.org/10.1088/1741-2560/10/4/046017',
     author='Peter Quicke',
     author_email='peter.quicke@gmail.com',
     url='https://github.com/peq10/FRI',
