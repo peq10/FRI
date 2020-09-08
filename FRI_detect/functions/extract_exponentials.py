@@ -17,23 +17,23 @@ def convert_exponential_to_dirac(t,x,phi,t_phi,tau):
 
     Parameters
     ----------
-    t : TYPE
-        DESCRIPTION.
-    x : TYPE
-        DESCRIPTION.
-    phi : TYPE
-        DESCRIPTION.
-    t_phi : TYPE
-        DESCRIPTION.
-    tau : TYPE
-        DESCRIPTION.
+    t : 1D Float vector 
+        Time stamps of samples in x.
+    x : 1D float vector. Same length as t
+        Fluorescent samples.
+    phi : 1D Float vector.
+        Exponential reproducing kernel.
+    t_phi : 1D Float vector
+        Time stamps of phi.
+    tau : float
+        Exponential coefficient of the fluorescent signal. e^(-t/tau)
 
     Returns
     -------
-    z_n : TYPE
-        DESCRIPTION.
-    t_n : TYPE
-        DESCRIPTION.
+    z_n : 1D float vector - length len(x) - 1
+        Equivalent to diracs sampled with phi*\beta_{\alpha T}.
+    t_n : 1D float vector length of z_n
+        Time stamps.
 
     '''
         
@@ -52,25 +52,25 @@ def convert_exponential_to_dirac(t,x,phi,t_phi,tau):
 
 def window_extract(z_n,t_n,c_m_n,n_vec,alpha_vec, fixed_K = None, taper_window = False):
     '''
-    Extracts exponentials in a sliding window
+    Extracts exponentials in a sliding window throughout the z_n signal
 
     Parameters
     ----------
-    z_n : TYPE
-        DESCRIPTION.
-    t_n : TYPE
-        DESCRIPTION.
-    c_m_n : TYPE
-        DESCRIPTION.
-    n_vec : TYPE
-        DESCRIPTION.
+    z_n : 1D float vec
+        Finite difference signal derived from fluorescent samples.
+    t_n : 1d float vec
+        z_n time stamps.
+    c_m_n : 2D array floats
+        Exponential reproducing coefficients.
+    n_vec : 1D array ints
+        Vector of sample locations for the exponential reproduction.
 
     Returns
     -------
-    all_tk : TYPE
-        DESCRIPTION.
-    all_ak : TYPE
-        DESCRIPTION.
+    all_tk : list of 1D float vectors
+        List where ith element is a vector of spikes estimated from the ith window.
+    all_ak : list of 1D float vectors
+        Amplitudes of spikes in same format as all_tk.
 
     '''
     T = np.mean(np.diff(t_n))
@@ -103,66 +103,90 @@ def window_extract(z_n,t_n,c_m_n,n_vec,alpha_vec, fixed_K = None, taper_window =
 
 def sliding_window_detect(t,x,tau,win_len,fixed_K = None, taper_window = False):
     '''
-    
+    A function that detects calcium transients (instantaneous rise, decay constant tau)
+    from a fluorescent signal, x, using a sliding window of length win_len and 
+    returns **all** the detected spikes from all the windows.
 
     Parameters
     ----------
-    t : TYPE
-        DESCRIPTION.
-    x : TYPE
-        DESCRIPTION.
-    tau : TYPE
-        DESCRIPTION.
-    win_len : TYPE
-        DESCRIPTION.
-    fixed_K : TYPE, optional
-        DESCRIPTION. The default is None.
+    t : 1D array of floats
+        Time stamps of x. Assumes even sampling.
+    x : 1D array of floats. Same length as t.
+        Fluorescent signal.
+    tau : float
+        Exponential decay constant e^(-t/tau).
+    win_len : Even integer. 
+        Window length for sliding window. Recommend  8 =< win_len =< 128, power of 2 typical.
+        need to change with sampling rate.
+    fixed_K : int, optional
+        If you want the model order (num spikes in window) to be fixed set this as an int. The default is None.
+        If is None model order is estimated from samples.
+    taper_window : bool, optional
+        If true will apply a window function to remove edge effects.
+        Typically not required for regular applications.
+        The default is False.
 
     Returns
     -------
-    all_tk : TYPE
-        DESCRIPTION.
-    all_ak : TYPE
-        DESCRIPTION.
+    all_tk : list of 1D float vectors
+        List where ith element is a vector of spikes estimated from the ith window.
+    all_ak : list of 1D float vectors
+        Amplitudes of spikes in same format as all_tk.
 
     '''
+    #Get sampling period
     T = np.mean(np.diff(t))
+    #Calculate the required sampling kernel, exponential reproducing coeffs, etc.
     phi,t_phi,c_m_n,n_vec,alpha_vec = ges.decaying_exp_filters(win_len, T, tau)
+    #Convert the signal to equivalent sampled diracs
     z_n,t_n = convert_exponential_to_dirac(t,x,phi,t_phi,tau)
+    #Extract in sliding window
     all_tk,all_ak = window_extract(z_n,t_n,c_m_n,n_vec,alpha_vec,fixed_K=fixed_K,taper_window=taper_window)
     return all_tk,all_ak
 
 def sliding_window_detect_box_filtered(t,x,tau,win_len,shutter_length,fixed_K = None, taper_window = True):
     '''
-    
+    A function that detects calcium transients (instantaneous rise, decay constant tau)
+    from a fluorescent signal, x, which has been collected using an integrating detector 
+    with integration period shutter_length
+    using a sliding window of length win_len and 
+    returns **all** the detected spikes from all the windows.
 
     Parameters
     ----------
-    t : TYPE
-        DESCRIPTION.
-    x : TYPE
-        DESCRIPTION.
-    tau : TYPE
-        DESCRIPTION.
-    win_len : TYPE
-        DESCRIPTION.
-    shutter_length : TYPE
-        DESCRIPTION.
-    fixed_K : TYPE, optional
-        DESCRIPTION. The default is None.
-    taper_window : TYPE, optional
-        DESCRIPTION. The default is False.
+    t : 1D array of floats
+        Time stamps of x. Assumes even sampling.
+    x : 1D array of floats. Same length as t.
+        Fluorescent signal.
+    tau : float
+        Exponential decay constant e^(-t/tau).
+    win_len : Even integer. 
+        Window length for sliding window. Recommend  8 =< win_len =< 128, power of 2 typical.
+        need to change with sampling rate.
+    shutter_length : float
+        Length of the integration period from the integrating detector.
+    fixed_K : int, optional
+        If you want the model order (num spikes in window) to be fixed set this as an int. The default is None.
+        If is None model order is estimated from samples.
+    taper_window : bool, optional
+        If true will apply a window function to remove edge effects.
+        Typically not required for regular applications.
+        The default is False.
 
     Returns
     -------
-    all_tk : TYPE
-        DESCRIPTION.
-    all_ak : TYPE
-        DESCRIPTION.
+    all_tk : list of 1D float vectors
+        List where ith element is a vector of spikes estimated from the ith window.
+    all_ak : list of 1D float vectors
+        Amplitudes of spikes in same format as all_tk.
 
     '''
+    #Get sampling period
     T = np.mean(np.diff(t))
+    #Calculate the required sampling kernel, exponential reproducing coeffs, etc.
     phi,t_phi,c_m_n,n_vec,alpha_vec = ges.box_decaying_exp_filters(win_len, T, tau, shutter_length)
+    #Convert the signal to equivalent sampled diracs
     z_n,t_n = convert_exponential_to_dirac(t,x,phi,t_phi,tau)
+    #Extract in sliding window
     all_tk,all_ak = window_extract(z_n,t_n,c_m_n,n_vec,alpha_vec,fixed_K=fixed_K, taper_window = taper_window)
     return all_tk,all_ak

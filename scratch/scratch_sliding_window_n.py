@@ -23,7 +23,7 @@ lam = 0.5
 T = 1/10
 T_s = T/oversamp
 
-noise_level = 0.0
+noise_level = 0.1
 tau = 0.5
 
 #Make long signal of decaying
@@ -32,7 +32,7 @@ t_k,a_k,t,x = sst.make_signal(length,(1/T)*oversamp,firing_rate = lam,tau = tau,
 
 if True:
     #add rolling shutter 
-    shutter_length = T*10
+    shutter_length = T*1
     
     shutter_fcn = np.zeros(int(np.round(shutter_length*oversamp/T))+2)
     shutter_fcn[1:-1] = 1/int(np.round(shutter_length*oversamp/T))
@@ -47,6 +47,7 @@ else:
     t = t[::oversamp]
     x = x[::oversamp]
 
+x += np.random.normal(scale = noise_level*x.max(),size = len(x))
 #plt.figure()
 #plt.plot(t,x)
 taper = True
@@ -126,5 +127,32 @@ plt.plot(t_k,np.ones_like(t_k) + len(all_tk1) + len(all_tk2),'.r')
 plt.plot(sp_t,np.ones_like(sp_t) + len(all_tk1) + len(all_tk2) + 10,'.g')
 plt.plot(t,x*10)
 
+
+def extract_times(all_tk, T, win_len):
+    all_tk = np.sort(all_tk)
+    interspike = (np.diff(all_tk) > T/1.5).astype(int)
+    sta = np.squeeze(np.argwhere(np.diff(interspike) < 0))
+    stop = np.squeeze(np.argwhere(np.diff(interspike) > 0))
+    if interspike[0] == 0:
+        sta = np.concatenate(([0],sta))
+    if interspike[-1] == 0:
+        stop = np.concatenate((stop,[len(all_tk)]))
+    
+    tk = []
+    for idx in range(len(sta)):
+        if stop[idx] - sta[idx] > win_len/5:
+            tk.append(np.mean(all_tk[sta[idx]:stop[idx]]))
+        
+    return np.array(tk)
+
+#plt.figure()
+tk = extract_times(np.concatenate(all_tk1), T, win_len)
+tk = tk[tk<t.max()]
+#plt.plot(t,x)
+#for ti in t_k:
+#    plt.plot([ti,ti],[0,len(all_tk1) + len(all_tk2)],'--b')
+
+plt.plot(tk,np.ones_like(tk)+ len(all_tk1) + len(all_tk2) + 20,'.b')
+#plt.plot(t_k,np.ones_like(t_k)*x.max(),'.r')
 #score,_ =  dc.compare_spike_trains(sp_t,t_k,noise_level,1/T,tau)
 #print(score)

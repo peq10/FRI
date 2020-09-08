@@ -12,8 +12,9 @@ def matrix_pencil(sm,K = None, thresh = 0.3):
     '''
     Noisy matrix pencil method for retrieving uk from sample moments (see 
     http://www.commsp.ee.ic.ac.uk/~pld/group/PhDThesis_Onativia15.pdf p.50)
+    https://doi.org/10.25560/49792 
     
-    Always uses Splits the samples in the middle although that may change in future. 
+    Always splits the samples in the middle although that may change in future. 
     Can estimate number of diracs.
 
     Parameters
@@ -57,42 +58,50 @@ def matrix_pencil(sm,K = None, thresh = 0.3):
 
 def matrix_pencil_noiseless(sm,K):
     '''
-    Retrieves Uk in noiseless case using matrix pencil
-
+    Retrieves Uk in noiseless case using the matrix pencil method
+    
+    See https://doi.org/10.25560/49792 section 2.4
+    
     Parameters
     ----------
-    sm : TYPE
-        DESCRIPTION.
-    K : TYPE
-        DESCRIPTION.
+    sm : 1D array of complex floats
+        Signal moments.
+    K : Int
+        Number of spikes (model order).
 
     Returns
     -------
-    uu_k : TYPE
-        DESCRIPTION.
+    uu_k : complex vector length K
+        uk values from which tk and ak can be retrieved.
 
     '''
+    #Form toeplitz matrix and sub matrices
     S = scipy.linalg.toeplitz(sm[K-1:],sm[K-1::-1])
     S0 = S[1:,:]
     S1 = S[:-1,:]
+    #solve eigenvalue problem (eq. 2.66 in above reference)
     Z = np.matmul(scipy.linalg.inv(S1),S0)
     uu_k = scipy.linalg.eig(Z)[0]
     return uu_k
 
 def retrieve_tk_ak(sm,T,alpha_vec, K = None,thresh = 0.3, remove_negative = True):
     '''
-    
+    Retrieves dirac locations and amplitudes (tk,ak) from an array of signal moments    
+
+    See https://doi.org/10.25560/49792  sec 2.4 & 2.5    
 
     Parameters
     ----------
-    sm : 1D array of signal moments
-        DESCRIPTION.
+    sm : 1D complex float vector
+        signal moments calculated from the expon. repro. sampled signal using the
+        c_{m,n} coefficients.
     T : Float
         Sampling period.
     alpha_vec : 1D complex array
         vector of sampling kernel exponential reproductions.
     K : int, optional
         Number of diracs in sample. The default is None.
+        If None is estimated from the moments.
 
     Returns
     -------
@@ -102,9 +111,10 @@ def retrieve_tk_ak(sm,T,alpha_vec, K = None,thresh = 0.3, remove_negative = True
         Estimated dirac sizes.
 
     '''
-    
+    #calculate uk values using matrix pencil
     uk = matrix_pencil(sm,K = K,thresh = thresh)    
     
+    #retrieve tk, uk using eq. 2.64 
     lbda = np.mean(np.real(np.diff(alpha_vec)/1j))
     omega_0 = np.real(alpha_vec[0]/1j)
     K = len(uk)
@@ -117,6 +127,7 @@ def retrieve_tk_ak(sm,T,alpha_vec, K = None,thresh = 0.3, remove_negative = True
     b_k = scipy.linalg.solve(A,B)
     a_k = np.real(b_k*np.exp(-1j*omega_0*t_k/T))
     
+    #Remove negative detected diracs
     if remove_negative:
         pos = a_k > 0
         a_k = a_k[pos]
@@ -125,7 +136,3 @@ def retrieve_tk_ak(sm,T,alpha_vec, K = None,thresh = 0.3, remove_negative = True
     return t_k,a_k
 
 
-
-
-if __name__ == '__main__':
-    pass

@@ -7,7 +7,6 @@ Created on Wed Jul 15 14:36:20 2020
 """
 
 import FRI_detect.functions.double_consistency_search as dc
-import numpy as np
 
 
 def detect_spikes(t,x,tau, windows = [32,8]):

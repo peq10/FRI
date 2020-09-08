@@ -34,13 +34,13 @@ def generate_e_spline(alpha_vec,T_s,T = 1,mode = 'causal'):
     phi_a_vec(t) = phi_a_0(t) * phi_a_1(t) * ... * phi_a_N(t)
     Parameters
     ----------
-    alpha_vec : TYPE
-    Vector of P+1 alpha values of the E=spline.
-    T_s : TYPE
+    alpha_vec : 1D array of complex floats
+    Vector of P+1 alpha values of the E-spline.
+    T_s : float
     Time resolution of the spline.
-    T : TYPE
+    T : int
     Scale factor. Default T = 1.
-    mode : TYPE
+    mode : string
     Optional argument. 'causal', 'symmetric' or 'anticausal'. Default 'causal'.
     
     Returns
@@ -70,7 +70,6 @@ def generate_e_spline(alpha_vec,T_s,T = 1,mode = 'causal'):
     t = np.arange(0,num_samples)*T_s
     t *= T
     
-    # TODO -  add the mode modifications to t
     if mode == 'symmetric':
         idx_max = np.argmax(phi)
         t = t - t[idx_max]
@@ -92,32 +91,32 @@ def decaying_exp_filters(win_len,T,tau,oversamp = 64):
 
     Parameters
     ----------
-    win_len : TYPE
-        DESCRIPTION.
-    T : TYPE
-        DESCRIPTION.
-    tau : TYPE
-        DESCRIPTION.
-    oversamp : TYPE, optional
-        DESCRIPTION. The default is 64.
+    win_len : int
+        Window length of signal.
+    T : float
+        Sampling period of signal.
+    tau : float
+        Exponential decay constant of signal. e^(-t/tau)
+    oversamp : int, optional
+        Oversampling factor to calculate e spline. The default is 64.
 
     Raises
     ------
     NotImplementedError
-        DESCRIPTION.
+        If you use an odd length window.
 
     Returns
     -------
-    phi : TYPE
-        DESCRIPTION.
-    t_phi : TYPE
-        DESCRIPTION.
-    c_m_n : TYPE
-        DESCRIPTION.
-    n_vec : TYPE
-        DESCRIPTION.
-    alpha_vec : TYPE
-        DESCRIPTION.
+    phi : 1D complex float vector
+        The required e-spline sampling kernel.
+    t_phi : 1D float vec
+        Time stamps of e-spline.
+    c_m_n : 2D complex float array. shape (len(n_vec),win_len)
+        Exponential reproducing coefficients.
+    n_vec : 1D int vector
+        Offsets for calculation of the c_m_n coefficients.
+    alpha_vec : 1D array of complex (python type, purely imaginary in real life) floats
+        The exponential coefficients for the exponentials which can be reproduced by phi.
 
     '''
     if win_len%2 != 0:
@@ -146,35 +145,46 @@ def decaying_exp_filters(win_len,T,tau,oversamp = 64):
 
 def box_decaying_exp_filters(win_len,T,tau,shutter_length,oversamp = 64):
     '''
-    For box filtered
+    Generates the sampling filters and exponential reproducing filters for 
+    converting decaying exponentials into diracs and then recovering their
+    positions and amplitudes.
+    
+    Does same thing as decaying_exp_filters but includes an integrating detector
 
     Parameters
     ----------
-    win_len : TYPE
-        DESCRIPTION.
-    T : TYPE
-        DESCRIPTION.
-    tau : TYPE
-        DESCRIPTION.
-    shutter_length : TYPE
-        DESCRIPTION.
-    oversamp : TYPE, optional
-        DESCRIPTION. The default is 64.
+    win_len : int
+        Window length of signal.
+    T : float
+        Sampling period of signal.
+    tau : float
+        Exponential decay constant of signal. e^(-t/tau)
+    shutter_length : Float
+        Integrating detector integration length.
+    oversamp : int, optional
+        Oversampling factor to calculate e spline. The default is 64.
+        
+    Raises
+    ------
+    NotImplementedError
+        If you use an odd length window.
 
     Returns
     -------
-    phi : TYPE
-        DESCRIPTION.
-    t_phi : TYPE
-        DESCRIPTION.
-    c_m_n : TYPE
-        DESCRIPTION.
-    n_vec : TYPE
-        DESCRIPTION.
-    alpha_vec : TYPE
-        DESCRIPTION.
-
+    phi : 1D complex float vector
+        The required e-spline sampling kernel.
+    t_phi : 1D float vec
+        Time stamps of e-spline.
+    c_m_n : 2D complex float array. shape (len(n_vec),win_len)
+        Exponential reproducing coefficients.
+    n_vec : 1D int vector
+        Offsets for calculation of the c_m_n coefficients.
+    alpha_vec : 1D array of complex (python type, purely imaginary in real life) floats
+        The exponential coefficients for the exponentials which can be reproduced by phi.
     '''
+    if win_len%2 != 0:
+        raise NotImplementedError('Only implemented even length windows')
+    
     alpha_vec = make_alpha_vec(win_len)
     phi,t_phi = generate_e_spline(alpha_vec, T/oversamp,T = T,mode = 'symmetric')
     

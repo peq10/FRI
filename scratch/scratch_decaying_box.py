@@ -18,7 +18,7 @@ import FRI_detect.functions.extract_exponentials as ee
 import FRI_detect.functions.get_c_mn_exp as gcm
 import FRI_detect.functions.simulate_spike_train as sst
 
-#np.random.seed(23)
+np.random.seed(23)
 
 T = 1/10
 lam = 0.2
@@ -32,7 +32,7 @@ while len(t_k) == 0:
     t_k,a_k,t,x = sst.make_signal(length,(1/T)*oversamp,firing_rate = lam,tau = tau,spike_std = 0)
 
 #add rolling shutter 
-shutter_length = T*2
+shutter_length = T*1
 
 shutter_fcn = np.zeros(int(np.round(shutter_length*oversamp/T))*2)
 shutter_fcn[:int(np.round(shutter_length*oversamp/T))] = 1/int(np.round(shutter_length*oversamp/T))
@@ -135,6 +135,7 @@ plt.stem(tk,ak,'r',use_line_collection = 'True',label = 'Recovered diracs')
 
 plt.xlabel('Time (s)')
 plt.legend(frameon = False)
+plt.xlim([0,10])
 #print(np.sort(tk) - np.sort(t_k))
 
 #plt.figure()
