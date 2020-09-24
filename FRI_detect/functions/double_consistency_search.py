@@ -120,6 +120,28 @@ def double_consistency_histogram(x,t,tau,winlens = [32,8],
     return tk,ak,hist_data
 
 
+def extract_spikes_model_order_est(x,t,tau,winlen=32,max_k = 10,spike_thresh = 0.1):
+    results = []
+    errors = []
+    
+
+    tk,ak = ee.sliding_window_detect(t,x,tau,win_len,fixed_K = fixed_K[idx])
+    
+    
+    return 0
+
+
+def get_prediction_err(t,x,tk,ak,tau):
+    x_hat = np.zeros_like(t)
+    for idx,sp in enumerate(tk):
+        t_adj = t - sp
+        t_adj *= t_adj > 0
+        x_hat += (t >= sp)*np.exp(-t_adj/tau)*ak[idx]
+
+    res = scipy.stats.linregress(x,x_hat)
+    return res.stderr    
+
+
 def extract_times(all_tk, T, win_len):
     '''
     A function to extract spike times from a single pass of the sliding window 

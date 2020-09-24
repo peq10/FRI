@@ -100,6 +100,91 @@ def window_extract(z_n,t_n,c_m_n,n_vec,alpha_vec, fixed_K = None, taper_window =
     
     return all_tk,all_ak
 
+def window_extract_estimate_order(t,x,tau,z_n,t_n,c_m_n,n_vec,alpha_vec, fixed_K = None, taper_window = False):
+    '''
+    Extracts exponentials in a sliding window throughout the z_n signal
+
+    Parameters
+    ----------
+    z_n : 1D float vec
+        Finite difference signal derived from fluorescent samples.
+    t_n : 1d float vec
+        z_n time stamps.
+    c_m_n : 2D array floats
+        Exponential reproducing coefficients.
+    n_vec : 1D array ints
+        Vector of sample locations for the exponential reproduction.
+
+    Returns
+    -------
+    all_tk : list of 1D float vectors
+        List where ith element is a vector of spikes estimated from the ith window.
+    all_ak : list of 1D float vectors
+        Amplitudes of spikes in same format as all_tk.
+
+    '''
+    T = np.mean(np.diff(t_n))
+    
+    #Use windows offset by half to avoid edge effects whilst reducing unnecessary computation
+    sliding_idx = n_vec[None,:] + np.arange(len(z_n) - len(n_vec) + 1)[::int(len(n_vec)/2),None]
+    z_n_window = z_n[sliding_idx]
+    t_n_window = t_n[sliding_idx] 
+    
+    #apply a window function to remove border effects
+    if taper_window:
+        taper = scipy.signal.windows.tukey(len(n_vec),alpha = 0.5,sym = True)
+        z_n_window *= taper[None,:]
+        
+
+    #Calculate moments
+    s_m_window = np.sum(c_m_n[:,None,:]*z_n_window[None,:,:],-1)
+    s_m_window = np.moveaxis(s_m_window,-1,0)
+    
+    #Extract from each window
+    all_tk = []
+    all_ak = []
+    for win_idx,win_sm in enumerate(s_m_window):
+        t_offset = t_n_window[win_idx,0] + n_vec[-1]*T
+        tk,ak = fit_model_order(t, x, tau, win_sm, T, alpha_vec, 10, t_offset)
+        all_tk.append(tk + t_offset)
+        all_ak.append(ak)
+    
+    return all_tk,all_ak
+
+def fit_model_order(t,x,tau,sm_samples,T,alpha_vec,max_K,t_offset):
+    errs = []
+    spikes = []
+    
+    #start with 0 spikes
+    tk,ak = [],[]
+    spikes.append((tk,ak))
+    err = get_prediction_err(t, x, tk, ak, tau)
+    errs.append(err)
+    
+    for k in range(1,max_K+1):
+        tk,ak = mp.retrieve_tk_ak(sm_samples, T, alpha_vec,K = k,thresh = 0.2)
+        spikes.append((tk,ak))
+        err = get_prediction_err(t, x, tk+t_offset, ak, tau)
+        errs.append(err)
+        
+    #choose model with largest drop in prediction erreor (see Reynolds thesis p.114)
+    corr_k = np.argmin(np.diff(errs))+1
+    
+    return spikes[corr_k]
+        
+        
+def get_prediction_err(t,x,tk,ak,tau):
+    x_hat = np.zeros_like(t)
+    for idx,sp in enumerate(tk):
+        t_adj = t - sp
+        t_adj *= t_adj > 0
+        x_hat += (t >= sp)*np.exp(-t_adj/tau)*ak[idx]
+
+    A,b,_,_,_ = scipy.stats.linregress(x,x_hat)
+    x_hat = x_hat*A + b
+    
+    err = np.sum((x - x_hat)**2)
+    return err
 
 def sliding_window_detect(t,x,tau,win_len,fixed_K = None, taper_window = False):
     '''
